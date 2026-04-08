@@ -11,7 +11,7 @@
     box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
 
     display: grid;
-    grid-template-columns: 65px 1fr;
+    grid-template-columns: 73.8px 1fr;
 }
 
 .text_logo {
@@ -21,7 +21,6 @@
 
 .img_logo_navbar {
     height: 60px;
-    width: 60px;
 }
 
 .navbar_box_user {
@@ -83,19 +82,21 @@
     justify-content: center;
     text-align: center;
 
-    background: #dcdccc;
+    background: #c9c9c9;
     transition: 0.2s;
     cursor: pointer;
     border: none;
 }
 
 .btn_list_comandas:hover {
-    background: #afab88;
+    background: #3e3e3e;
+    color: #ffffff;
 }
 
 .lc_selected {
-    background: #afab88 !important;
+    background: #3e3e3e !important;
     cursor: default !important;
+    color: #ffffff;
 }
 
 

@@ -308,7 +308,6 @@
 
     overflow-y: auto;
     scrollbar-width: none;
-    border-right: 1px solid #000000;
 }
 
 .detalles_comanda {
@@ -338,7 +337,8 @@
 
 
 .btn-send-comanda {
-    border: 1px solid #000000;
+    border: none;
+    border-top: 1px solid #000000;
     text-decoration: none;
     padding: 4px 5px;
     background: #e8e8e8;

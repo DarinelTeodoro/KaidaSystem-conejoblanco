@@ -46,13 +46,13 @@ if (isset($_POST['logout'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
-    <title>Restaurante "El Retoño" - Barra</title>
+    <title>Barra - Inicio</title>
     <link href="../../../style.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 
     <style>
         #body-page {
-            background: rgb(243, 243, 237);
+            background: #eff0ff;
             padding: 80px 0px 0px;
         }
     </style>
@@ -61,10 +61,10 @@ if (isset($_POST['logout'])) {
 <body id="body-page">
     <div class="system_navbar_general fixed-top">
         <div>
-            <img src="../../../img/elretono-icon.jpg" class="img_logo_navbar">
+            <img src="../../../img/shortlogo-nbg.png" class="img_logo_navbar">
         </div>
         <div class="d-flex align-items-center justify-content-between dropdown">
-            <div class="text_logo">El Retoño</div>
+            <div class="text_logo"></div>
             <button type="button" id="btnAudioBarra" class="btn btn-danger ms-3 me-3"
                 style="border-radius: 0px; width: 50px; height: 35pxpx;">
                 <i class="bi bi-volume-mute"></i>

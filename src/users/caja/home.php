@@ -46,13 +46,13 @@ if (isset($_POST['logout'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
-    <title>APP DEMO</title>
+    <title>Caja - Inicio</title>
     <link href="../../../style.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 
     <style>
         #body-page {
-            background: #ffffff;
+            background: #eff0ff;
             padding: 100px 20px 20px;
         }
     </style>
@@ -61,10 +61,10 @@ if (isset($_POST['logout'])) {
 <body id="body-page">
     <div class="system_navbar_general fixed-top">
         <a href="home.php">
-            <!--<img src="../../../img/elretono-icon.jpg" class="img_logo_navbar">-->
+            <img src="../../../img/shortlogo-nbg.png" class="img_logo_navbar">
         </a>
         <div class="d-flex align-items-center justify-content-between dropdown">
-            <span class="text_logo">APP DEMO</span>
+            <span class="text_logo"></span>
             <div class="navbar_box_user" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <div style="height: 60px;" class="d-flex justify-content-center flex-column lh-1">
                     <span class="text-success fw-bold">Hola</span>

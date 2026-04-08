@@ -142,6 +142,8 @@ try {
             height: 100px;
             display: grid;
             grid-template-rows: 1fr 1fr;
+
+            border: 1px solid #475569;
         }
 
         .table-modern thead th {
@@ -208,8 +210,7 @@ try {
     <div>
         <div class="row">
             <div class="col-12 col-md-6 col-xl-6 p-2">
-                <div class="bg-light"
-                    style="box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
+                <div class="shadow border border-1 border-dark">
                     <div class="p-2" style="border-bottom: 1px solid rgb(0, 0, 0, 0.4);">
                         <span class="text-muted fw-bold" style="font-size: 0.9rem;">Meseros: Ventas y Propinas</span>
                     </div>
@@ -274,9 +275,9 @@ try {
                     </div>
                 </div>
             </div>
+
             <div class="col-12 col-md-6 col-xl-6 p-2">
-                <div class="bg-light"
-                    style="box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
+                <div class="bg-light shadow border border-1 border-dark">
                     <div class="p-2" style="border-bottom: 1px solid rgb(0, 0, 0, 0.4);">
                         <span class="text-muted fw-bold" style="font-size: 0.9rem;">Metodos de Pago</span>
                     </div>
@@ -321,7 +322,7 @@ try {
         </div>
 
 
-        <div class="bg-light"
+        <div class="bg-light shadow border border-1 border-dark"
             style="box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
             <div class="p-2" style="border-bottom: 1px solid rgb(0, 0, 0, 0.4);">
                 <span class="text-muted fw-bold" style="font-size: 0.9rem;">Detalles de Comandas Pagadas</span>
@@ -404,7 +405,7 @@ try {
 
 
 
-        <div class="bg-light mt-3"
+        <div class="bg-light mt-3 shadow border border-1 border-dark"
             style="box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
             <div class="p-2" style="border-bottom: 1px solid rgb(0, 0, 0, 0.4);">
                 <span class="text-muted fw-bold" style="font-size: 0.9rem;">Comandas Pendientes / Canceladas</span>
@@ -450,7 +451,7 @@ try {
 
         <div class="row">
             <div class="col-12 col-md-6 col-xl-6 p-2">
-                <div class="bg-light"
+                <div class="bg-light shadow border border-1 border-dark"
                     style="box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
                     <div class="p-2" style="border-bottom: 1px solid rgb(0, 0, 0, 0.4);">
                         <span class="text-muted fw-bold" style="font-size: 0.9rem;">Platillos Vendidos</span>
@@ -498,7 +499,7 @@ try {
                 </div>
             </div>
             <div class="col-12 col-md-6 col-xl-6 p-2">
-                <div class="bg-light"
+                <div class="bg-light shadow border border-1 border-dark"
                     style="box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
                     <div class="p-2" style="border-bottom: 1px solid rgb(0, 0, 0, 0.4);">
                         <span class="text-muted fw-bold" style="font-size: 0.9rem;">Extras Solicitados</span>

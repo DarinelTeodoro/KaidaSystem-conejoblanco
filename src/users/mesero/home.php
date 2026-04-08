@@ -34,7 +34,7 @@ if (isset($_POST['logout'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
-    <title>APP DEMO</title>
+    <title>Mesero - Inicio</title>
     <link href="../../../style.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 

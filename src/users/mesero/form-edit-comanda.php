@@ -37,7 +37,7 @@ $data_comanda = detalle_comanda($id_comanda);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
-    <title>APP DEMO</title>
+    <title>Mesero - Editar Comanda</title>
     <link href="../../../style.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 

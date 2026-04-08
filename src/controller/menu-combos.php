@@ -81,7 +81,7 @@ include('../model/querys.php');
 
             echo '
                 <div class="col-12 col-md-6 col-xl-4 cat-card">
-                    <div class="card h-100 shadow-sm border-0" style="border-radius:1rem;">
+                    <div class="card h-100 shadow border border-1 border-dark" style="border-radius:1rem;">
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex align-items-start justify-content-between mb-2">
                                 <h6 class="mb-0 fw-semibold text-truncate text-uppercase" title="' . $combotable['combo'] . '">

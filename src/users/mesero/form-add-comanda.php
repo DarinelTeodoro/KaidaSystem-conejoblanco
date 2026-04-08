@@ -34,7 +34,7 @@ if (isset($_POST['logout'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
-    <title>APP DEMO</title>
+    <title>Mesero - Crear Comanda</title>
     <link href="../../../style.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 
@@ -47,66 +47,17 @@ if (isset($_POST['logout'])) {
 </head>
 
 <body>
-    <button type="button" class="floating_button_car" id="open_carrito">
-        Detalles
-    </button>
-
-    <form method="post" action="" class="system_modal_newcomanda m-0" id="form_new_comanda">
+    <form method="post" action="" class="system_modal_newcomanda m-0">
         <div class="header_modal">
             <a class="btn btn-secondary align-items-center" href="home.php" id="btn-back"
                 style="height: 100%; display: flex;"><i class="bi bi-arrow-left"></i></a>
-            <span>Nueva Comanda</span>
-            <i class="bi bi-x-lg icon_close_modal" id="btn-close-resumen" style="display: none;"></i>
+            <button type="button" class="btn btn-light" data-bs-toggle="offcanvas" data-bs-target="#form_new_comanda"
+                aria-controls="form_new_comanda">
+                <i class="bi bi-cart-fill"></i>
+            </button>
         </div>
         <div class="body_modal_newcomanda">
             <div class="columna_newcomanda personalizacion_comanda" id="personalizacion_comanda">
-                <div class="p-2 ps-4 pe-4" id="cont_type_delivery" style="display: grid;">
-                    <label for="type-delivery">Tipo de pedido</label>
-                    <select class="type-delivery" id="type-delivery">
-                        <option value="mesa">En Mesa</option>
-                        <option value="domicilio">Para Llevar</option>
-                    </select>
-                </div>
-                <div class="p-2 ps-4 pe-4" id="cont_mesa_pedido" style="display: grid;">
-                    <label for="mesa-pedido">N° Mesa</label>
-                    <select class="mesa-pedido" id="mesa-pedido">
-                        <option value="0" disabled selected>Selecciona una mesa</option>
-                        <?php
-                        // Obtener el número total de mesas configuradas
-                        $countmesas = n_mesas();
-                        $max_mesas = $countmesas['n_mesas'];
-                        $min_mesas = 1;
-
-                        // Consultar las mesas que tienen comandas PENDIENTES
-                        $conexion = new Conexion();
-                        $query = $conexion->prepare("
-                            SELECT DISTINCT mesa 
-                            FROM comandas 
-                            WHERE estado = 'pendiente' 
-                            AND mesa IS NOT NULL 
-                            AND tipo = 'mesa'
-                        ");
-                        $query->execute();
-                        $mesas_ocupadas = $query->fetchAll(PDO::FETCH_COLUMN);
-
-                        // Crear un array para búsqueda rápida
-                        $mesas_ocupadas_array = array_flip($mesas_ocupadas);
-
-                        // Generar las opciones
-                        for ($i = $min_mesas; $i <= $max_mesas; $i++) {
-                            $ocupada = isset($mesas_ocupadas_array[$i]);
-                            $disabled = $ocupada ? 'disabled' : '';
-                            $texto_adicional = $ocupada ? ' (Ocupada)' : '';
-
-                            echo '<option value="' . $i . '" ' . $disabled . '>Mesa - ' . $i . $texto_adicional . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-                <div class="p-2 ps-4 pe-4" id="cont_nombre_delivery" style="display: none;">
-                    <label for="nombre-delivery">Nombre/Domicilio cliente</label>
-                    <input type="text" name="nombre-delivery" id="nombre-delivery" placeholder="Pedido a nombre de...">
-                </div>
                 <div class="pt-3 pb-0 ps-4 pe-4 d-flex align-items-center justify-content-end">
                     <input type="search" name="search-producto-comanda" id="search-producto-comanda"
                         placeholder="Buscar producto/categoria">
@@ -114,14 +65,73 @@ if (isset($_POST['logout'])) {
                 <div class="p-4 pt-2" id="productos_seleccionables"></div>
             </div>
 
+            <div></div>
+        </div>
+    </form>
 
-            <div class="columna_newcomanda detalles_comanda" id="carrito_comanda">
-                <div class="p-0 ps-3 pe-3 d-flex justify-content-between align-items-center header_detalles_comanda">
-                    <span class="fw-bold">Resumen de Comanda</span>
-                    <button type="submit" class="btn-send-comanda" id="btn-send-comanda">Enviar Comanda</button>
-                </div>
-                <div class="body_detalles_comanda" id="body_detalles_comanda"></div>
+    <form method="post" action="" class="offcanvas offcanvas-end show mb-0" data-bs-scroll="true"
+        data-bs-backdrop="false" tabindex="-1" id="form_new_comanda" aria-labelledby="offcanvasScrollingLabel"
+        style="border-left: 1px solid #000000;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Carrito Comanda</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="p-2 ps-4 pe-4" id="cont_type_delivery" style="display: grid;">
+                <label for="type-delivery">Tipo de pedido</label>
+                <select class="type-delivery" id="type-delivery">
+                    <option value="mesa">En Mesa</option>
+                    <option value="domicilio">Para Llevar</option>
+                </select>
             </div>
+
+            <div class="p-2 ps-4 pe-4" id="cont_mesa_pedido" style="display: grid;">
+                <label for="mesa-pedido">N° Mesa</label>
+                <select class="mesa-pedido" id="mesa-pedido">
+                    <option value="0" disabled selected>Selecciona una mesa</option>
+                    <?php
+                    // Obtener el número total de mesas configuradas
+                    $countmesas = n_mesas();
+                    $max_mesas = $countmesas['n_mesas'];
+                    $min_mesas = 1;
+
+                    // Consultar las mesas que tienen comandas PENDIENTES
+                    $conexion = new Conexion();
+                    $query = $conexion->prepare("
+                            SELECT DISTINCT mesa 
+                            FROM comandas 
+                            WHERE estado = 'pendiente' 
+                            AND mesa IS NOT NULL 
+                            AND tipo = 'mesa'
+                        ");
+                    $query->execute();
+                    $mesas_ocupadas = $query->fetchAll(PDO::FETCH_COLUMN);
+
+                    // Crear un array para búsqueda rápida
+                    $mesas_ocupadas_array = array_flip($mesas_ocupadas);
+
+                    // Generar las opciones
+                    for ($i = $min_mesas; $i <= $max_mesas; $i++) {
+                        $ocupada = isset($mesas_ocupadas_array[$i]);
+                        $disabled = $ocupada ? 'disabled' : '';
+                        $texto_adicional = $ocupada ? ' (Ocupada)' : '';
+
+                        echo '<option value="' . $i . '" ' . $disabled . '>Mesa - ' . $i . $texto_adicional . '</option>';
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <div class="p-2 ps-4 pe-4" id="cont_nombre_delivery" style="display: none;">
+                <label for="nombre-delivery">Nombre/Domicilio cliente</label>
+                <input type="text" name="nombre-delivery" id="nombre-delivery" placeholder="Pedido a nombre de...">
+            </div>
+
+            <div id="body_detalles_comanda"></div>
+        </div>
+        <div class="offcanvas-footer">
+            <button type="submit" class="btn-send-comanda" id="btn-send-comanda"
+                style="width: 100%; border-right: 0px; border-left: 0px;">Enviar Comanda</button>
         </div>
     </form>
 
@@ -236,22 +246,6 @@ if (isset($_POST['logout'])) {
         document.getElementById('container_secondary_alert').classList.remove('visible');
     }
 
-    document.addEventListener('click', e => {
-        if (e.target.id === 'open_carrito') {
-            document.getElementById('carrito_comanda')?.classList.add('visible');
-            document.getElementById('btn-back').style.display = 'none';
-            document.getElementById('btn-close-resumen').style.display = 'flex';
-        }
-    });
-
-    document.addEventListener('click', e => {
-        if (e.target.id === 'btn-close-resumen') {
-            document.getElementById('carrito_comanda')?.classList.remove('visible');
-            document.getElementById('btn-back').style.display = 'flex';
-            document.getElementById('btn-close-resumen').style.display = 'none';
-        }
-    });
-
 
     // ════════════════════════════════════════════════════════════════
     //  RENDER DE PRODUCTOS (JSON → DOM)
@@ -317,11 +311,11 @@ if (isset($_POST['logout'])) {
 
         if (combos && combos.length) {
             combos.forEach(combo => {
-                const agotado    = combo.disponibilidad === 1;
+                const agotado = combo.disponibilidad === 1;
                 const searchText = (combo.nombre + ' combos').toLowerCase();
-                const accion     = agotado ? '' : `onclick="armar_combo(${combo.id})"`;
+                const accion = agotado ? '' : `onclick="armar_combo(${combo.id})"`;
                 const claseCarta = agotado ? 'card_producto agotado' : 'card_producto';
-                const badgeHtml  = agotado
+                const badgeHtml = agotado
                     ? '<span class="p-1 fw-bold rounded shadow bg-secondary text-light">Agotado</span>'
                     : '';
 
@@ -354,10 +348,10 @@ if (isset($_POST['logout'])) {
                 <div class="carrousel_productos pt-2 pb-2 mb-1" data-cat="${escapeAttr(catNombre)}">`;
 
                 cat.productos.forEach(prod => {
-                    const agotado    = prod.disponibilidad === 1;
+                    const agotado = prod.disponibilidad === 1;
                     const searchText = (prod.nombre + ' ' + cat.nombre).toLowerCase();
                     const claseCarta = agotado ? 'card_producto agotado' : 'card_producto';
-                    const badgeHtml  = agotado
+                    const badgeHtml = agotado
                         ? '<span class="p-1 fw-bold rounded shadow bg-secondary text-light">Agotado</span>'
                         : '';
 
@@ -625,10 +619,8 @@ if (isset($_POST['logout'])) {
         }
 
         function resaltar() {
-            document.getElementById('open_carrito').classList.add('resaltado');
-            setTimeout(() => {
-                document.getElementById('open_carrito').classList.remove('resaltado');
-            }, 400);
+            var myOffcanvas = new bootstrap.Offcanvas(document.getElementById('form_new_comanda'));
+            myOffcanvas.show();
         }
 
         function addProductSimple({ product_id, nombre, precio, df }) {
@@ -794,10 +786,10 @@ if (isset($_POST['logout'])) {
             const totalComanda = comandaTotal(state.items);
 
             cont.innerHTML = `
-    <div class="p-2 mb-2 sticky-top" style="background:#dcdccc; border-bottom:1px solid #000;">
+    <div class="p-2 mb-2 mt-2 sticky-top" style="background:#003558; border-bottom:1px solid #000000; border-top:1px solid #000000;">
       <div class="d-flex justify-content-between align-items-center">
-        <div class="text-muted">Total comanda</div>
-        <div class="fw-bold text-primary">$${money(totalComanda)}</div>
+        <div class="text-light">Total comanda</div>
+        <div class="fw-bold text-warning">$${money(totalComanda)}</div>
       </div>
     </div>
 
@@ -1352,9 +1344,6 @@ if (isset($_POST['logout'])) {
                 success: function (response) {
                     ComandaStore.state.items = [];
                     ComandaStore.render();
-                    document.getElementById('carrito_comanda')?.classList.remove('visible');
-                    document.getElementById('btn-back').style.display = 'flex';
-                    document.getElementById('btn-close-resumen').style.display = 'none';
                     document.getElementById('btn-send-comanda').disabled = false;
 
                     document.getElementById('type-delivery').value = 'mesa';

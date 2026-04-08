@@ -25,28 +25,28 @@
 
     <div class="row g-0 pt-3 justify-content-between">
         <div class="col-2 col-md-2 col-xl-2 cat-card">
-            <div class="card h-100 shadow-sm border-0" style="border-radius:1rem;">
+            <div class="card h-100 shadow-sm border-0">
                 <button type="button" class="btn_seccion seccion_selected"
                     data-seccion="menu-categorias"><i class="bi bi-list-check"></i><b>Categorias</b></button>
             </div>
         </div>
         <div class="col-2 col-md-2 col-xl-2 cat-card">
-            <div class="card h-100 shadow-sm border-0" style="border-radius:1rem;">
+            <div class="card h-100 shadow-sm border-0">
                 <button type="button" class="btn_seccion" data-seccion="menu-combos"><i class="bi bi-box-fill"></i><b>Combos</b></button>
             </div>
         </div>
         <div class="col-2 col-md-2 col-xl-2 cat-card">
-            <div class="card h-100 shadow-sm border-0" style="border-radius:1rem;">
+            <div class="card h-100 shadow-sm border-0">
                 <button type="button" class="btn_seccion" data-seccion="menu-productos"><i class="bi bi-fork-knife"></i><b>Productos</b></button>
             </div>
         </div>
         <div class="col-2 col-md-2 col-xl-2 cat-card">
-            <div class="card h-100 shadow-sm border-0" style="border-radius:1rem;">
+            <div class="card h-100 shadow-sm border-0">
                 <button type="button" class="btn_seccion" data-seccion="menu-variantes"><i class="bi bi-collection-fill"></i><b>Variantes</b></button>
             </div>
         </div>
         <div class="col-2 col-md-2 col-xl-2 cat-card">
-            <div class="card h-100 shadow-sm border-0" style="border-radius:1rem;">
+            <div class="card h-100 shadow-sm border-0">
                 <button type="button" class="btn_seccion" data-seccion="menu-extras"><i class="bi bi-bag-plus-fill"></i><b>Extras</b></button>
             </div>
         </div>

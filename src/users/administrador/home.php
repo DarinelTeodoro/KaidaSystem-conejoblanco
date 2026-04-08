@@ -41,7 +41,7 @@ if (empty($_SESSION['data-useractive'])) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
-    <title>Conejo Blanco - Panel de Administración</title>
+    <title>Administrador - Panel de Administración</title>
     <link href="../../../style.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 </head>

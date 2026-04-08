@@ -26,7 +26,7 @@ include('../../model/querys.php');
                     foreach ($array_userstable as $usertable) {
                         echo '
                         <div class="col-12 col-sm-6 col-lg-3">
-                            <div class="kpi">
+                            <div class="kpi shadow border border-1 border-dark">
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="foto_usuario" style="background: rgb(0, 0, 0, 0) url(\'../../files/img_users/'. $usertable['photo'] .'\') center center / cover no-repeat;">
                                         

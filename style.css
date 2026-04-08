@@ -139,6 +139,8 @@ textarea {
 
     background: rgb(0, 0, 0, 0.5);
     overflow-y: auto;
+
+    z-index: 10000;
 }
 
 .container_alert {
