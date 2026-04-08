@@ -1,0 +1,466 @@
+/*.container_main_home {
+
+}*/
+
+.system_navbar_general {
+    height: 80px;
+    width: 100%;
+    padding: 10px 20px 10px 15px;
+
+    background: rgb(255, 255, 255);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+
+    display: grid;
+    grid-template-columns: 73.8px 1fr;
+}
+
+.text_logo {
+    font-family: "Urbanist", sans-serif;
+    font-size: 1.24rem;
+}
+
+.img_logo_navbar {
+    height: 60px;
+}
+
+.navbar_box_user {
+    height: 60px;
+    width: 200px;
+
+    display: grid;
+    grid-template-columns: 1fr 60px;
+
+    border: none;
+    border-radius: 0px;
+}
+
+.foto_perfil {
+    border: 1px solid #000000;
+    border-radius: 25px;
+}
+
+.dropdown-menu {
+    --bs-dropdown-border-radius: none;
+}
+
+.btn_dropdown {
+    height: 40px;
+    width: 100%;
+    background: #ffffff;
+    color: rgb(220, 53, 69);
+    border: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: 0.2s;
+}
+
+.btn_dropdown:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+
+.btn-select-variante {
+    height: 45px;
+
+    border: none;
+    border-top: 1px solid rgb(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgb(0, 0, 0, 0.1);
+
+    background: #ffffff;
+    transition: 0.2s;
+}
+
+.btn-select-variante:hover {
+    background: rgb(0, 0, 0, 0.1);
+}
+
+
+.floating_button {
+    position: fixed;
+    bottom: 15px;
+    right: 20px;
+
+    height: 70px;
+    width: 70px;
+    padding: 10px;
+    font-size: 2rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #000000;
+    border-radius: 35px;
+    cursor: pointer;
+
+    background: rgb(255, 255, 255);
+    color: #000000;
+}
+
+.floating_button:hover {
+    background: rgba(0, 0, 0, .6);
+    color: #ffffff;
+}
+
+
+@media (width < 500px) {
+    .system_navbar_general {
+        padding: 10px 10px 10px 7px;
+    }
+
+    .text_logo {
+        visibility: hidden;
+    }
+}
+
+
+
+
+.lista_comandas {
+    height: 40px;
+    width: 100%;
+
+    display: grid;
+    gap: 5px;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.btn_list_comandas {
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    background: #c9c9c9;
+    transition: 0.2s;
+    cursor: pointer;
+    border: none;
+}
+
+.btn_list_comandas:hover {
+    background: #3e3e3e;
+    color: #ffffff;
+}
+
+.lc_selected {
+    background: #3e3e3e !important;
+    cursor: default !important;
+    color: #ffffff;
+}
+
+
+#container_lista_comandas {
+    padding: 10px 0px 80px 0px;
+}
+
+.card_comanda {
+    background: #ffffff;
+    margin: 7px 0px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    border: 1px solid rgb(0, 0, 0, 0.3);
+}
+
+.card_comanda:hover {
+    background: rgb(108, 117, 125, 0.2);
+}
+
+
+
+.fade_system {
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+
+    background: rgba(0, 0, 0, .6);
+}
+
+.system_modal {
+    height: 500px;
+    width: 400px;
+
+    display: grid;
+    grid-template-rows: 60px calc(100% - 60px);
+    background: #ffffff;
+}
+
+.header_modal {
+    height: 60px;
+    width: 100%;
+    padding: 10px 20px;
+
+    background: rgb(23, 30, 35);
+    color: rgb(255, 255, 255);
+
+    border-bottom: 1px solid #000000;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.icon_close_modal {
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: 0.2s;
+}
+
+.icon_close_modal:hover {
+    opacity: 1;
+}
+
+.body_modal {
+    height: 100%;
+    width: 100%;
+
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+@media (width < 460px) {
+    .system_modal {
+        width: 100%;
+    }
+}
+
+@media (height < 560px) {
+    .system_modal {
+        height: 100%;
+    }
+}
+
+
+.floating_button_car {
+    position: fixed;
+    bottom: 15px;
+    right: 20px;
+
+    height: auto;
+    width: auto;
+    padding: 5px 15px;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #000000;
+    border-radius: 5px;
+    cursor: pointer;
+
+    background: rgb(255, 255, 255);
+    color: #000000;
+}
+
+.floating_button_car:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+.resaltado {
+    background: rgb(213, 232, 133);
+    box-shadow: rgba(205, 239, 12, 0.1) 0px 8px 24px, rgba(240, 236, 11, 0.1) 0px 16px 56px, rgba(207, 241, 14, 0.1) 0px 24px 80px;
+    border: 1.5px solid red;
+}
+
+.system_modal_newcomanda {
+    height: 100%;
+    width: 100%;
+
+    display: grid;
+    grid-template-rows: 60px calc(100% - 60px);
+    background: #ffffff;
+}
+
+.body_modal_newcomanda {
+    height: 100%;
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    transition: 0.2s
+}
+
+.columna_newcomanda {
+    height: 100%;
+    width: 100%;
+}
+
+
+.personalizacion_comanda {
+    height: 100%;
+    width: 100%;
+
+    overflow-y: auto;
+    scrollbar-width: none;
+    border-right: 1px solid #000000;
+}
+
+.detalles_comanda {
+    height: 100%;
+    width: 100%;
+
+    overflow-y: auto;
+}
+
+.header_detalles_comanda {
+    height: 50px;
+    width: 100%;
+
+    border-bottom: 1px solid #000000;
+    background: #003558;
+    color: #ffffff;
+}
+
+.body_detalles_comanda {
+    height: 100%;
+    width: 100%;
+
+    overflow-y: auto;
+    min-height: 0;
+    scrollbar-width: thin;
+}
+
+
+.btn-send-comanda {
+    border: 1px solid #000000;
+    text-decoration: none;
+    padding: 4px 5px;
+    background: #e8e8e8;
+    color: #000000;
+    font-family: "Pompiere", sans-serif;
+    font-weight: bold;
+    font-size: 1.2rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.btn-send-comanda:hover {
+    background: #ffc1bc;
+}
+
+@media (width >=800px) {
+    .detalles_comanda {
+        height: 100%;
+        max-height: 100%;
+        display: grid;
+        grid-template-rows: 50px minmax(0, 1fr);
+    }
+}
+
+@media (width < 800px) {
+    .body_modal_newcomanda {
+        grid-template-columns: 100%;
+    }
+
+    .personalizacion_comanda {
+        border-right: 0px;
+        padding-bottom: 40px;
+    }
+
+    .detalles_comanda {
+        position: fixed;
+        border-left: 0px;
+        border-top: 1px solid #000000;
+
+        display: grid;
+        grid-template-rows: 50px minmax(0, 1fr);
+        height: 100%;
+        overflow: hidden;
+
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .body_detalles_comanda {
+        height: 100%;
+        overflow-y: auto;
+        min-height: 0;
+        scrollbar-width: 0px;
+        background: #ffffff;
+        padding-bottom: 60px;
+    }
+
+    .floating_button_car {
+        display: flex;
+    }
+}
+
+
+
+.division_categorias_secciones {
+    background: #003558;
+    padding: 10px 20px;
+    color: #ffffff;
+}
+
+.carrousel_productos {
+    height: 170px;
+    display: flex;
+    gap: .6rem;
+    overflow-x: auto;
+    padding-bottom: .25rem;
+    scrollbar-width: thin;
+}
+
+
+.card_producto {
+    height: 100%;
+    width: 115px;
+    flex: 0 0 115px;
+
+    display: grid;
+    grid-template-rows: 64px 1fr;
+
+    border: 1.5px solid #000000;
+    border-radius: 10px;
+    box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.agotado {
+    border: 1.5px solid #000000 !important;
+    background: #e8e8e8;
+}
+
+.card_producto:hover {
+    border-color: rgb(220, 53, 69);
+}
+
+.comanda_producto_descipcion {
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+
+.loader_combo,
+.loader_variante {
+    height: 100%;
+    width: 100%;
+    text-align: center;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

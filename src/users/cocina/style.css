@@ -1,0 +1,220 @@
+/*.container_main_home {
+
+}*/
+
+.system_navbar_general {
+    height: 80px;
+    width: 100%;
+    padding: 10px 20px 10px 15px;
+
+    background: rgb(255, 255, 255);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+
+    display: grid;
+    grid-template-columns: 65px 1fr;
+}
+
+.text_logo {
+    font-family: "Urbanist", sans-serif;
+    font-size: 1.24rem;
+}
+
+.img_logo_navbar {
+    height: 60px;
+    width: 60px;
+}
+
+.navbar_box_user {
+    height: 60px;
+    width: 200px;
+
+    display: grid;
+    grid-template-columns: 1fr 60px;
+
+    border: none;
+    border-radius: 0px;
+}
+
+.foto_perfil {
+    border: 1px solid #000000;
+    border-radius: 25px;
+}
+
+.dropdown-menu {
+    --bs-dropdown-border-radius: none;
+}
+
+.btn_dropdown {
+    height: 40px;
+    width: 100%;
+    background: #ffffff;
+    color: rgb(220, 53, 69);
+    border: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: 0.2s;
+}
+
+.btn_dropdown:hover {
+    background: #000000;
+    color: #ffffff;
+}
+
+
+
+.lista_comandas {
+    height: 40px;
+    width: 100%;
+
+    display: grid;
+    gap: 5px;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.btn_list_comandas {
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    background: #dcdccc;
+    transition: 0.2s;
+    cursor: pointer;
+    border: none;
+}
+
+.btn_list_comandas:hover {
+    background: #afab88;
+}
+
+.lc_selected {
+    background: #afab88 !important;
+    cursor: default !important;
+}
+
+
+#container_lista_comandas {
+    padding: 10px 0px 0px 0px;
+}
+
+.card_comanda {
+    background: #ffffff;
+    margin: 7px 0px;
+    cursor: pointer;
+    transition: 0.2s;
+
+    border: 1px solid rgb(0, 0, 0, 0.3);
+}
+
+.card_comanda:hover {
+    background: rgb(108, 117, 125, 0.2);
+}
+
+
+.fade_system {
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+
+    background: rgba(0, 0, 0, .6);
+}
+
+.system_modal {
+    height: 500px;
+    width: 400px;
+
+    display: grid;
+    grid-template-rows: 60px calc(100% - 60px);
+    background: #ffffff;
+}
+
+.header_modal {
+    height: 60px;
+    width: 100%;
+    padding: 10px 20px;
+
+    background: rgb(23, 30, 35);
+    color: rgb(255, 255, 255);
+
+    border-bottom: 1px solid #000000;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.icon_close_modal {
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: 0.2s;
+}
+
+.icon_close_modal:hover {
+    opacity: 1;
+}
+
+.body_modal {
+    height: 100%;
+    width: 100%;
+
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+@media (width < 460px) {
+    .system_modal {
+        width: 100%;
+    }
+}
+
+@media (height < 560px) {
+    .system_modal {
+        height: 100%;
+    }
+}
+
+@media (width < 500px) {
+    .system_navbar_general {
+        padding: 10px 10px 10px 7px;
+    }
+
+    .text_logo {
+        display: none;
+    }
+}
+
+
+
+
+
+
+
+
+/* Estilos para las cards */
+strong {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1.2rem;
+}
+
+#tickets-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+
+    overflow-x: auto;
+    scrollbar-width: none;
+}
