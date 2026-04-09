@@ -60,6 +60,7 @@ if (!empty($_SESSION['data-useractive'])) {
         @media (height < 600px) {
             .container_login {
                 height: 100%;
+                border-radius: 0;
                 box-shadow: none;
             }
         }
@@ -67,13 +68,18 @@ if (!empty($_SESSION['data-useractive'])) {
         @media (height < 437.4px) {
             .container_main_login {
                 height: auto;
+            }
+
+            .container_login {
                 padding: 20px;
+                border-radius: 0;
             }
         }
 
         @media (width < 500px) {
             .container_login {
                 width: 100%;
+                border-radius: 0;
                 box-shadow: none;
             }
         }

@@ -54,6 +54,11 @@
     align-items: center;
     justify-content: center;
 
+    text-decoration: none;
+    font-family: "Pompiere", sans-serif;
+    font-size: 1.3rem;
+    font-weight: bold;
+
     transition: 0.2s;
 }
 

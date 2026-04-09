@@ -210,7 +210,7 @@ try {
     <div>
         <div class="row">
             <div class="col-12 col-md-6 col-xl-6 p-2">
-                <div class="shadow border border-1 border-dark">
+                <div class="bg-light shadow border border-1 border-dark">
                     <div class="p-2" style="border-bottom: 1px solid rgb(0, 0, 0, 0.4);">
                         <span class="text-muted fw-bold" style="font-size: 0.9rem;">Meseros: Ventas y Propinas</span>
                     </div>

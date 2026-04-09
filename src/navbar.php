@@ -1,3 +1,7 @@
+<?php
+$caja = data_servicio();
+?>
+
 <div class="system_navbar fixed-top">
     <div class="head_navbar">
         <div class="container_circle_photo">
@@ -24,7 +28,7 @@
         </button>
         <button type="button" data-modulo="configurar-mesas" class="navbar_option">
             <div class="cont_icon_menu"><i class="bi bi-grid-3x3-gap"></i></div>
-            <div class="cont_text_menu">Mesas</div>
+            <div class="cont_text_menu">Mesas<?= $caja['caja'] == 0 ? ' & Caja' : '' ?></div>
         </button>
         <button type="button" data-modulo="gestion-comandas" class="navbar_option">
             <div class="cont_icon_menu"><i class="bi bi-clipboard"></i></div>
@@ -65,7 +69,7 @@
     </button>
     <button type="button" data-modulo="configurar-mesas" class="option_responsive">
         <div class="icon_responsive"><i class="bi bi-grid-3x3-gap"></i></div>
-        <div class="text_menu_responsive">Mesas</div>
+        <div class="text_menu_responsive">Mesas<?= $caja['caja'] == 0 ? ' & Caja' : '' ?></div>
     </button>
     <button type="button" data-modulo="gestion-comandas" class="option_responsive">
         <div class="icon_responsive"><i class="bi bi-clipboard"></i></div>
