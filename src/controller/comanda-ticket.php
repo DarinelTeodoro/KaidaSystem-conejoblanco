@@ -6,7 +6,7 @@ date_default_timezone_set('America/Mexico_City');
 
 <style>
     .main-container {
-        width: 58mm;
+        width: 70mm;
         background: #ffffff;
         margin: 10px auto;
         padding: 10px 10px;
@@ -23,7 +23,7 @@ date_default_timezone_set('America/Mexico_City');
         justify-content: center;
         text-align: center;
         flex-direction: column;
-        font-size: 10px;
+        font-size: 13px;
         line-height: 1.35;
     }
 
@@ -40,7 +40,8 @@ date_default_timezone_set('America/Mexico_City');
     }
 
     .despedida {
-        font-size: 11px;
+        font-size: 13px;
+        font-weight: bold;
         text-align: center;
     }
 
@@ -48,7 +49,7 @@ date_default_timezone_set('America/Mexico_City');
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 11px;
+        font-size: 13px;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
 
@@ -66,7 +67,7 @@ date_default_timezone_set('America/Mexico_City');
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 11px;
+        font-size: 14px;
         font-weight: 800;
         font-family: monospace;
     }
@@ -75,7 +76,7 @@ date_default_timezone_set('America/Mexico_City');
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 200;
         font-family: monospace;
     }
@@ -84,7 +85,7 @@ date_default_timezone_set('America/Mexico_City');
         display: flex;
         align-items: center;
         justify-content: end;
-        font-size: 11px;
+        font-size: 13px;
         font-weight: 700;
         font-family: monospace;
     }
@@ -92,7 +93,7 @@ date_default_timezone_set('America/Mexico_City');
 
 <div class="main-container">
     <div class="cont-logo">
-        <img src="../../img/fulllogo-nbg.png" style="height: 90px;">
+        <img src="../../img/fulllogo-nbg.png" style="height: 100px;">
     </div>
     <div class="info-restaurante">
         <span>C. Francisco I. Madero 514</span>
@@ -180,35 +181,6 @@ date_default_timezone_set('America/Mexico_City');
                 $grupos[$grupoId]['items'][] = $cp;
             }
 
-            // Generar HTML para componentes agrupados
-            foreach ($grupos as $grupo) {
-                if (empty($grupo['nombre'])) {
-                    // Si no hay nombre de grupo, mostrar items individualmente
-                    foreach ($grupo['items'] as $cp) {
-                        if ($cp['kind'] == 'variante') {
-                            $detHtml .= '';
-                        } else {
-                            $detHtml .= "<div class='text-muted' style='font-size:.85rem;'><span class='badge bg-secondary' style='font-size:0.6rem;'>{$cp['kind']}</span> {$cp['nombre']}</div>";
-                        }
-                    }
-                } else {
-                    // Mostrar grupo con sus items
-                    $detHtml .= "<div class='mb-1'>";
-                    $detHtml .= "<span class='text-muted fw-bold' style='font-size:.85rem;'>{$grupo['nombre']}:</span>";
-                    $detHtml .= "<ul class='m-0 ps-3' style='list-style-type: none; padding-left: 0 !important;'>";
-
-                    foreach ($grupo['items'] as $item) {
-                        $detHtml .= "<li style='margin-left: 0; padding-left: 0; font-size:.85rem;'>";
-                        $detHtml .= "<i class='bi bi-check-circle-fill " . ($item['kind'] === 'incluido' ? 'text-success' : 'text-primary') . "' style='font-size:0.7rem;'></i> ";
-                        $detHtml .= $item['nombre'];
-                        $detHtml .= "</li>";
-                    }
-
-                    $detHtml .= "</ul>";
-                    $detHtml .= "</div>";
-                }
-            }
-
             // Procesar extras
             foreach ($extras as $cp) {
                 $extrasHtml .= "<div class='data-extra'><div>+ {$cp['nombre']} x{$cp['qty']}</div><div>$" . number_format($cp['precio'] * $cp['qty'], 2) . "</div></div>";
@@ -242,5 +214,5 @@ date_default_timezone_set('America/Mexico_City');
 
     <div class="hr"></div>
     <div class="despedida"><span>¡Gracias por su preferencia!</span></div>
-    <div align="center"><i style="font-size: 10px; color: rgb(0, 0, 0, 0.7); margin-top: 5px;">Kaida System</i></div>
+    <div align="center"><i style="font-size: 10px; margin-top: 10px; font-weight: bold;">Kaida System</i></div>
 </div>
