@@ -92,12 +92,13 @@ date_default_timezone_set('America/Mexico_City');
 
 <div class="main-container">
     <div class="cont-logo">
-        <img src="../../img/elretono-logo-nbg.png" style="height: 90px;">
+        <img src="../../img/fulllogo-nbg.png" style="height: 90px;">
     </div>
     <div class="info-restaurante">
-        <span>Parras de la Fuente, Coahuila, Reforma 46</span>
-        <span>Colonia Centro, 27980</span>
-        <span>Tel: 842 148 4636</span>
+        <span>C. Francisco I. Madero 514</span>
+        <span>Zona Centro, 27980</span>
+        <span>Parras de la Fuente, Coah.</span>
+        <span>Tel: 842 148 5513</span>
     </div>
     <div class="hr"></div>
 
@@ -241,4 +242,5 @@ date_default_timezone_set('America/Mexico_City');
 
     <div class="hr"></div>
     <div class="despedida"><span>¡Gracias por su preferencia!</span></div>
+    <div align="center"><i style="font-size: 10px; color: rgb(0, 0, 0, 0.7); margin-top: 5px;">Kaida System</i></div>
 </div>
