@@ -50,30 +50,17 @@ $data_comanda = detalle_comanda($id_comanda);
 </head>
 
 <body>
-    <button type="button" class="floating_button_car" id="open_carrito">
-        Detalles
-    </button>
-
-    <form method="post" action="" class="system_modal_newcomanda m-0" id="form_new_comanda">
+    <div class="system_modal_newcomanda m-0">
         <div class="header_modal">
             <a class="btn btn-secondary align-items-center" href="home.php" id="btn-back"
                 style="height: 100%; display: flex;"><i class="bi bi-arrow-left"></i></a>
-            <b class="fs-5">Comanda #<?= $id_comanda ?></b>
-            <i class="bi bi-x-lg icon_close_modal" id="btn-close-resumen" style="display: none;"></i>
+            <button type="button" class="btn btn-light" data-bs-toggle="offcanvas" data-bs-target="#form_new_comanda"
+                aria-controls="form_new_comanda">
+                <i class="bi bi-cart-fill"></i>
+            </button>
         </div>
         <div class="body_modal_newcomanda">
             <div class="columna_newcomanda personalizacion_comanda" id="personalizacion_comanda">
-
-                <div class="p-2 ps-4 pe-4" id="cont_mesa_pedido" style="display: grid;">
-                    <label for="cliente-info">Cliente</label>
-                    <input type="text" name="cliente-info" id="cliente-info"
-                        value="<?= $data_comanda['tipo'] == 'mesa' ? 'Mesa ' . $data_comanda['mesa'] : $data_comanda['cliente'] ?>"
-                        readonly>
-                </div>
-                <div class="p-2 ps-4 pe-4" id="cont_nombre_delivery" style="display: none;">
-                    <label for="nombre-delivery">Nombre/Domicilio cliente</label>
-                    <input type="text" name="nombre-delivery" id="nombre-delivery" placeholder="Pedido a nombre de...">
-                </div>
                 <div class="pt-3 pb-0 ps-4 pe-4 d-flex align-items-center justify-content-end">
                     <input type="search" name="search-producto-comanda" id="search-producto-comanda"
                         placeholder="Buscar producto/categoria">
@@ -82,13 +69,34 @@ $data_comanda = detalle_comanda($id_comanda);
             </div>
 
 
-            <div class="columna_newcomanda detalles_comanda" id="carrito_comanda">
-                <div class="p-0 ps-3 pe-3 d-flex justify-content-between align-items-center header_detalles_comanda">
-                    <span class="fw-bold">Resumen de Comanda</span>
-                    <button type="submit" class="btn-send-comanda" id="btn-send-comanda">Agregar a la Comanda</button>
-                </div>
-                <div class="body_detalles_comanda" id="body_detalles_comanda"></div>
+            <div></div>
+        </div>
+    </div>
+
+    <form method="post" action="" class="offcanvas offcanvas-end show mb-0" data-bs-scroll="true"
+        data-bs-backdrop="false" tabindex="-1" id="form_new_comanda" aria-labelledby="offcanvasScrollingLabel"
+        style="border-left: 1px solid #000000;">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Comanda #<?= $id_comanda ?></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="p-2 ps-4 pe-4" id="cont_mesa_pedido" style="display: grid;">
+                <label for="cliente-info">Cliente</label>
+                <input type="text" name="cliente-info" id="cliente-info"
+                    value="<?= $data_comanda['tipo'] == 'mesa' ? 'Mesa ' . $data_comanda['mesa'] : $data_comanda['cliente'] ?>"
+                    readonly>
             </div>
+            <div class="p-2 ps-4 pe-4" id="cont_nombre_delivery" style="display: none;">
+                <label for="nombre-delivery">Nombre/Domicilio cliente</label>
+                <input type="text" name="nombre-delivery" id="nombre-delivery" placeholder="Pedido a nombre de...">
+            </div>
+
+            <div id="body_detalles_comanda"></div>
+        </div>
+        <div class="offcanvas-footer">
+            <button type="submit" class="btn-send-comanda" id="btn-send-comanda"
+                style="width: 100%; border-right: 0px; border-left: 0px;">Enviar Comanda</button>
         </div>
     </form>
 
@@ -179,9 +187,11 @@ $data_comanda = detalle_comanda($id_comanda);
             <div class="body_alert">
                 <div class="mb-3"><span id="text_message_alert_2">Mensaje Alerta</span></div>
                 <div id="container-btn-acept">
-                    <button type="button" href="home.php" class="btn_accept_alert me-1"
-                        onclick="hide_alert_2()" style="background: #cacaca;">Continuar Agregando</button>
-                    <a href="home.php" type="button" class="btn_accept_alert ms-1" style="text-decoration: none; color: #000000; font-family: 'Pompiere', sans-serif; font-weight: bold; font-size: 1.3rem; background: #007e39; color: #ffffff;">Ver Comandas</a>
+                    <button type="button" href="home.php" class="btn_accept_alert me-1" onclick="hide_alert_2()"
+                        style="background: #cacaca;">Continuar Agregando</button>
+                    <a href="home.php" type="button" class="btn_accept_alert ms-1"
+                        style="text-decoration: none; color: #000000; font-family: 'Pompiere', sans-serif; font-weight: bold; font-size: 1.3rem; background: #007e39; color: #ffffff;">Ver
+                        Comandas</a>
                 </div>
             </div>
         </div>
@@ -202,80 +212,174 @@ $data_comanda = detalle_comanda($id_comanda);
         document.getElementById('container_secondary_alert').classList.remove('visible');
     }
 
-    document.addEventListener('click', e => {
-        if (e.target.id === 'open_carrito') {
-            document.getElementById('carrito_comanda')?.classList.add('visible');
-            document.getElementById('btn-back').style.display = 'none';
-            document.getElementById('btn-close-resumen').style.display = 'flex';
-        }
-    });
 
-    document.addEventListener('click', e => {
-        if (e.target.id === 'btn-close-resumen') {
-            document.getElementById('carrito_comanda')?.classList.remove('visible');
-            document.getElementById('btn-back').style.display = 'flex';
-            document.getElementById('btn-close-resumen').style.display = 'none';
-        }
-    });
+    // ════════════════════════════════════════════════════════════════
+    //  RENDER DE PRODUCTOS (JSON → DOM)
+    //  Reemplaza la carga de HTML con $.load()
+    // ════════════════════════════════════════════════════════════════
 
-    // Variables para la recarga automática de productos
-    let intervaloActualizacionProductos;
-    let ultimaCargaProductos = 0;
+    let hashProductosActual = null;           // último hash recibido
+    let intervaloActualizacionProductos = null;
 
-    // Función para cargar productos con caché controlado
-    function cargarProductosComanda(forzar = false) {
+    /**
+     * Pide el JSON al servidor.
+     * Si el hash no cambió, no toca el DOM.
+     * Si cambió, reconstruye el catálogo completo.
+     */
+    async function cargarProductosComanda(forzar = false) {
+        try {
+            const res = await fetch('../../controller/mesero-productos-json.php?_=' + Date.now());
+            if (!res.ok) throw new Error('HTTP ' + res.status);
 
-        const ahora = Date.now();
+            const data = await res.json();
 
-        if (!forzar && ahora - ultimaCargaProductos < 10000) return;
+            // Sin cambios → nada que hacer
+            if (!forzar && data.hash === hashProductosActual) return;
 
-        ultimaCargaProductos = ahora;
+            hashProductosActual = data.hash;
 
-        const cont = document.getElementById('productos_seleccionables');
+            // Guardar scroll de cada carrusel antes de redibujar
+            const cont = document.getElementById('productos_seleccionables');
+            if (!cont) return;
 
-        if (!cont) return;
+            const scrollsPrevios = {};
+            cont.querySelectorAll('.carrousel_productos[data-cat]').forEach(c => {
+                scrollsPrevios[c.dataset.cat] = c.scrollLeft;
+            });
 
-        // GUARDAR SCROLL HORIZONTAL DE CADA CAROUSEL
-        const scrollCarouseles = [];
+            // Renderizar
+            cont.innerHTML = renderCatalogo(data.combos, data.categorias);
 
-        cont.querySelectorAll('.carrousel_productos').forEach((c, i) => {
-            scrollCarouseles[i] = c.scrollLeft;
-        });
-
-        $('#productos_seleccionables').load('../../controller/mesero-productos-comanda.php?' + ahora, function () {
-
-            const nuevosCarouseles = cont.querySelectorAll('.carrousel_productos');
-
-            // RESTAURAR SCROLL
-            nuevosCarouseles.forEach((c, i) => {
-                if (scrollCarouseles[i] !== undefined) {
-                    c.scrollLeft = scrollCarouseles[i];
+            // Restaurar scroll
+            cont.querySelectorAll('.carrousel_productos[data-cat]').forEach(c => {
+                if (scrollsPrevios[c.dataset.cat] !== undefined) {
+                    c.scrollLeft = scrollsPrevios[c.dataset.cat];
                 }
             });
 
-            if (window.refiltrarProductosComanda) {
-                window.refiltrarProductosComanda();
-            }
+            // Re-aplicar filtro de búsqueda si hay texto activo
+            if (window.refiltrarProductosComanda) window.refiltrarProductosComanda();
 
-        });
-    }
-
-
-
-    // Inicializar recarga automática de productos
-    function inicializarRecargaProductos() {
-        // Cargar inmediatamente
-        cargarProductosComanda(true);
-
-        // Configurar intervalo (cada 15 segundos)
-        intervaloActualizacionProductos = setInterval(() => cargarProductosComanda(), 15000);
-    }
-
-    // Limpiar intervalo al salir
-    function limpiarIntervaloProductos() {
-        if (intervaloActualizacionProductos) {
-            clearInterval(intervaloActualizacionProductos);
+        } catch (err) {
+            console.warn('Error cargando productos:', err);
         }
+    }
+
+    /**
+     * Construye el HTML completo del catálogo a partir del JSON.
+     */
+    function renderCatalogo(combos, categorias) {
+        let html = '';
+
+        // ── Sección COMBOS ────────────────────────────────────────────
+        html += '<div class="division_categorias_secciones"><span class="fw-bold">COMBOS</span></div>';
+        html += '<div class="carrousel_productos pt-2 pb-2 mb-1">';
+
+        if (combos && combos.length) {
+            combos.forEach(combo => {
+                const agotado = combo.disponibilidad === 1;
+                const searchText = (combo.nombre + ' combos').toLowerCase();
+                const accion = agotado ? '' : `onclick="armar_combo(${combo.id})"`;
+                const claseCarta = agotado ? 'card_producto agotado' : 'card_producto';
+                const badgeHtml = agotado
+                    ? '<span class="p-1 fw-bold rounded shadow bg-secondary text-light">Agotado</span>'
+                    : '';
+
+                html += `
+                <div class="${claseCarta}" data-search="${escapeAttr(searchText)}" ${accion}>
+                    <div style="height:100%;width:100%;
+                        background:rgb(0,0,0,0.1) url('../../files/img_products/default.webp') center/cover no-repeat;
+                        border-radius:10px 10px 0 0;background-blend-mode:darken;">
+                        <div class="d-flex align-items-center justify-content-center"
+                            style="font-size:.8rem;height:100%;width:100%;">${badgeHtml}</div>
+                    </div>
+                    <div class="comanda_producto_descipcion">
+                        <div class="p-1"><span class="lh-1 text-uppercase">${escapeHtmlRender(combo.nombre)}</span></div>
+                        <div class="pe-1 ps-1"><span class="text-primary">$${formatMoney(combo.precio)}</span></div>
+                    </div>
+                </div>`;
+            });
+        }
+        html += '</div>'; // fin carrousel combos
+
+        // ── Secciones por categoría ───────────────────────────────────
+        if (categorias && categorias.length) {
+            categorias.forEach(cat => {
+                const catNombre = cat.nombre.toLowerCase();
+
+                html += `
+                <div class="division_categorias_secciones" data-cat="${escapeAttr(catNombre)}">
+                    <span class="fw-bold">${escapeHtmlRender(cat.nombre)}</span>
+                </div>
+                <div class="carrousel_productos pt-2 pb-2 mb-1" data-cat="${escapeAttr(catNombre)}">`;
+
+                cat.productos.forEach(prod => {
+                    const agotado = prod.disponibilidad === 1;
+                    const searchText = (prod.nombre + ' ' + cat.nombre).toLowerCase();
+                    const claseCarta = agotado ? 'card_producto agotado' : 'card_producto';
+                    const badgeHtml = agotado
+                        ? '<span class="p-1 fw-bold rounded shadow bg-secondary text-light">Agotado</span>'
+                        : '';
+
+                    let accion = '';
+                    if (!agotado) {
+                        if (prod.tiene_variantes) {
+                            accion = `onclick="select_variante(${prod.id})"`;
+                        } else {
+                            const nombre = escapeAttr(prod.nombre);
+                            accion = `onclick="addprodto_pedido(${prod.id},'${nombre}',${prod.precio},'${prod.destino}')"`;
+                        }
+                    }
+
+                    html += `
+                    <div class="${claseCarta}" data-search="${escapeAttr(searchText)}" ${accion}>
+                        <div style="height:100%;width:100%;
+                            background:rgb(0,0,0,0.1) url('../../files/img_products/${prod.photo}') center/cover no-repeat;
+                            border-radius:10px 10px 0 0;background-blend-mode:darken;">
+                            <div class="d-flex align-items-center justify-content-center"
+                                style="font-size:.8rem;height:100%;width:100%;">${badgeHtml}</div>
+                        </div>
+                        <div class="comanda_producto_descipcion">
+                            <div class="p-1"><span class="lh-1 text-uppercase">${escapeHtmlRender(prod.nombre)}</span></div>
+                            <div class="pe-1 ps-1"><span class="text-primary">$${formatMoney(prod.precio)}</span></div>
+                        </div>
+                    </div>`;
+                });
+
+                html += '</div>'; // fin carrousel categoría
+            });
+        }
+
+        return html;
+    }
+
+    // ── Utilidades de render ──────────────────────────────────────────
+    function escapeAttr(str) {
+        return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function escapeHtmlRender(str) {
+        return (str || '').replace(/[&<>"']/g, m =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])
+        );
+    }
+
+    function formatMoney(n) {
+        return Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // ── Polling ───────────────────────────────────────────────────────
+    function inicializarRecargaProductos() {
+        cargarProductosComanda(true);                                   // carga inmediata
+        intervaloActualizacionProductos = setInterval(
+            () => cargarProductosComanda(),                             // cada 15 s compara hash
+            15000
+        );
+    }
+
+    function limpiarIntervaloProductos() {
+        if (intervaloActualizacionProductos)
+            clearInterval(intervaloActualizacionProductos);
     }
 
 
@@ -305,7 +409,7 @@ $data_comanda = detalle_comanda($id_comanda);
             if (window.refiltrarProductosComanda) window.refiltrarProductosComanda();
         });
 
-        cargarProductosComanda(true); // Usar la nueva función con forzar recarga
+        //cargarProductosComanda(true); // Usar la nueva función con forzar recarga
         // INICIALIZAR RECARGA AUTOMÁTICA DE PRODUCTOS
         inicializarRecargaProductos();
         // Cargar catálogo de extras
@@ -463,10 +567,8 @@ $data_comanda = detalle_comanda($id_comanda);
         }
 
         function resaltar() {
-            document.getElementById('open_carrito').classList.add('resaltado');
-            setTimeout(() => {
-                document.getElementById('open_carrito').classList.remove('resaltado');
-            }, 400);
+            var myOffcanvas = new bootstrap.Offcanvas(document.getElementById('form_new_comanda'));
+            myOffcanvas.show();
         }
 
         function addProductSimple({ product_id, nombre, precio, df }) {
@@ -632,10 +734,10 @@ $data_comanda = detalle_comanda($id_comanda);
             const totalComanda = comandaTotal(state.items);
 
             cont.innerHTML = `
-    <div class="p-2 mb-2 sticky-top" style="background:#dcdccc; border-bottom:1px solid #000;">
+    <div class="p-2 mb-2 sticky-top" style="background:#003558; border-bottom:1px solid #000000; border-top:1px solid #000000;">
       <div class="d-flex justify-content-between align-items-center">
-        <div class="text-muted">Total comanda</div>
-        <div class="fw-bold text-primary">$${money(totalComanda)}</div>
+        <div class="text-light">Total comanda</div>
+        <div class="fw-bold text-warning">$${money(totalComanda)}</div>
       </div>
     </div>
 
@@ -1160,9 +1262,6 @@ $data_comanda = detalle_comanda($id_comanda);
                 success: function () {
                     ComandaStore.state.items = [];
                     ComandaStore.render();
-                    document.getElementById('carrito_comanda')?.classList.remove('visible');
-                    document.getElementById('btn-back').style.display = 'flex';
-                    document.getElementById('btn-close-resumen').style.display = 'none';
                     document.getElementById('btn-send-comanda').disabled = false;
                     document.getElementById('search-producto-comanda').value = '';
                     hide_alert();

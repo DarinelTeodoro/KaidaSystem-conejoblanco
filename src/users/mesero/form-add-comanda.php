@@ -47,7 +47,7 @@ if (isset($_POST['logout'])) {
 </head>
 
 <body>
-    <form method="post" action="" class="system_modal_newcomanda m-0">
+    <div class="system_modal_newcomanda m-0">
         <div class="header_modal">
             <a class="btn btn-secondary align-items-center" href="home.php" id="btn-back"
                 style="height: 100%; display: flex;"><i class="bi bi-arrow-left"></i></a>
@@ -67,7 +67,7 @@ if (isset($_POST['logout'])) {
 
             <div></div>
         </div>
-    </form>
+    </div>
 
     <form method="post" action="" class="offcanvas offcanvas-end show mb-0" data-bs-scroll="true"
         data-bs-backdrop="false" tabindex="-1" id="form_new_comanda" aria-labelledby="offcanvasScrollingLabel"

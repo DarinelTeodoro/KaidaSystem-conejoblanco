@@ -188,6 +188,7 @@
     transition: opacity 0.3s ease, visibility 0.3s ease;
 
     background: rgba(0, 0, 0, .6);
+    z-index: 10000;
 }
 
 .system_modal {

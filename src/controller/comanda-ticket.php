@@ -8,8 +8,8 @@ date_default_timezone_set('America/Mexico_City');
     .main-container {
         width: 70mm;
         background: #ffffff;
-        margin: 10px auto;
-        padding: 10px 10px;
+        margin: 0px auto 10px auto;
+        padding: 0px 10px 10px 10px;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
 
@@ -93,7 +93,7 @@ date_default_timezone_set('America/Mexico_City');
 
 <div class="main-container">
     <div class="cont-logo">
-        <img src="../../img/fulllogo-nbg.png" style="height: 100px;">
+        <img src="../../img/fulllogo-nbg.png" style="height: 150px;">
     </div>
     <div class="info-restaurante">
         <span>C. Francisco I. Madero 514</span>
