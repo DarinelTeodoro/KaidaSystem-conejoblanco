@@ -19,11 +19,12 @@ $ventas->execute();
 $data_ventas = $ventas->fetch(PDO::FETCH_ASSOC);
 $real = floatval($data_last['corte']) + (floatval($data_ventas['recibido']) - floatval($data_ventas['cambio']));
 
-$init = $conexion->prepare('INSERT INTO caja(inicial, corte, usuario, cantidad_real, fecha) VALUES (:inicial, :corte, :usuario, :real, :fecha)');
+$init = $conexion->prepare('INSERT INTO caja(inicial, corte, usuario, cantidad_real, fecha_inicial, fecha) VALUES (:inicial, :corte, :usuario, :real, :fecha_init, :fecha)');
 $init->bindParam(':inicial', $data_last['corte']);
 $init->bindParam(':corte', $cantidad);
 $init->bindParam(':usuario', $_SESSION['data-useractive']);
 $init->bindParam(':real', $real);
+$init->bindParam(':fecha_init', $data_last['fecha']);
 $init->bindParam(':fecha', $fecha);
 $init->execute();
 
