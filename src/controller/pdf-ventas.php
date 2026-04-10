@@ -96,20 +96,20 @@ class PDF extends FPDF
     function Header()
     {
         // Logo
-        $this->Image('../../img/elretono-logo.jpg', 10, 8, 33);
+        $this->Image('../../img/fulllogo-nbg.png', 10, 8, 20);
 
         // Arial bold 15
         $this->SetFont('Arial', 'B', 15);
 
         // Título
-        $this->setXY(45, 8);
-        $this->Cell(0, 10, utf8_decode('Reporte de Ventas - Restaurante "El Retoño"'), 0, 1, 'L');
+        $this->setXY(35, 8);
+        $this->Cell(0, 10, utf8_decode('Reporte de Ventas - Restaurante "Conejo Blanco"'), 0, 1, 'L');
         // Subtítulo o información adicional
         $this->SetFont('Arial', '', 10);
-        $this->setXY(45, 16);
-        $this->Cell(0, 6, 'Reforma 46, Colonia Centro, Parras de la Fuente, Coahuila, 27980.', 0, 1, 'L');
-        $this->setX(45);
-        $this->Cell(0, 6, 'Tel: 842 148 4636', 0, 1, 'L');
+        $this->setXY(35, 16);
+        $this->Cell(0, 6, 'C. Francisco I. Madero 514, Zona Centro, Parras de la Fuente, Coahuila, 27980.', 0, 1, 'L');
+        $this->setX(35);
+        $this->Cell(0, 6, 'Tel: 842 148 5513', 0, 1, 'L');
 
         // Línea separadora
         $this->Line(10, 30, 205, 30);

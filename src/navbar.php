@@ -5,7 +5,8 @@ $caja = data_servicio();
 <div class="system_navbar fixed-top">
     <div class="head_navbar">
         <div class="container_circle_photo">
-            <div class="circle_photo" style="background: rgb(0, 0, 0, 0) url('../../files/img_users/<?= $datauser['photo'] ?>') center center / cover no-repeat;">
+            <div class="circle_photo"
+                style="background: rgb(0, 0, 0, 0) url('../../files/img_users/<?= $datauser['photo'] ?>') center center / cover no-repeat;">
                 <!-- strtoupper(substr($datauser['name'], 0, 1)) -->
             </div>
         </div>
@@ -28,7 +29,7 @@ $caja = data_servicio();
         </button>
         <button type="button" data-modulo="configurar-mesas" class="navbar_option">
             <div class="cont_icon_menu"><i class="bi bi-grid-3x3-gap"></i></div>
-            <div class="cont_text_menu">Mesas<?= $caja['caja'] == 0 ? ' & Caja' : '' ?></div>
+            <div class="cont_text_menu">Mesas</div>
         </button>
         <button type="button" data-modulo="gestion-comandas" class="navbar_option">
             <div class="cont_icon_menu"><i class="bi bi-clipboard"></i></div>
@@ -43,6 +44,10 @@ $caja = data_servicio();
         <button type="button" data-modulo="estadisticas-operativas" class="navbar_option">
             <div class="cont_icon_menu"><i class="bi bi-graph-up"></i></div>
             <div class="cont_text_menu">Ventas</div>
+        </button>
+        <button type="button" data-modulo="reporte-caja" class="navbar_option">
+            <div class="cont_icon_menu"><i class="bi bi-cash-coin"></i></div>
+            <div class="cont_text_menu">Caja</div>
         </button>
 
         <div class="title_secciones_menu">Administración</div>
@@ -69,7 +74,7 @@ $caja = data_servicio();
     </button>
     <button type="button" data-modulo="configurar-mesas" class="option_responsive">
         <div class="icon_responsive"><i class="bi bi-grid-3x3-gap"></i></div>
-        <div class="text_menu_responsive">Mesas<?= $caja['caja'] == 0 ? ' & Caja' : '' ?></div>
+        <div class="text_menu_responsive">Mesas</div>
     </button>
     <button type="button" data-modulo="gestion-comandas" class="option_responsive">
         <div class="icon_responsive"><i class="bi bi-clipboard"></i></div>
@@ -82,6 +87,10 @@ $caja = data_servicio();
     <button type="button" data-modulo="estadisticas-operativas" class="option_responsive">
         <div class="icon_responsive"><i class="bi bi-graph-up"></i></div>
         <div class="text_menu_responsive">Ventas</div>
+    </button>
+    <button type="button" data-modulo="reporte-caja" class="option_responsive">
+        <div class="icon_responsive"><i class="bi bi-cash-coin"></i></div>
+        <div class="text_menu_responsive">Caja</div>
     </button>
     <button type="button" data-modulo="gestion-users" class="option_responsive">
         <div class="icon_responsive"><i class="bi bi-people"></i></div>

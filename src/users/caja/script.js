@@ -1621,15 +1621,17 @@ document.getElementById('print-ticket')?.addEventListener('click', () => {
 
     try {
         if (ticketFrame?.contentWindow) {
-            ticketFrame.onload = function () {
+            const doPrint = function () {
+                // ✅ Limpiar el handler inmediatamente para que no se dispare de nuevo
+                ticketFrame.onload = null;
+
                 const iframeDoc = ticketFrame.contentDocument || ticketFrame.contentWindow.document;
 
-                // Forzar alineación izquierda
                 const style = iframeDoc.createElement('style');
                 style.textContent = `
-                @page { margin: 0; padding: 0px;}
-                body { margin: 0; padding: 0px;}
-                .main-container { margin: 0 !important; padding: 6px;}
+                    @page { margin: 0; padding: 0px; }
+                    body { margin: 0; padding: 0px; }
+                    .main-container { margin: 0 !important; padding: 6px; }
                 `;
                 iframeDoc.head.appendChild(style);
 
@@ -1638,7 +1640,11 @@ document.getElementById('print-ticket')?.addEventListener('click', () => {
             };
 
             if (ticketFrame.contentDocument?.readyState === 'complete') {
-                ticketFrame.onload();
+                // El iframe ya cargó, imprimir directo
+                doPrint();
+            } else {
+                // Esperar a que cargue y luego imprimir
+                ticketFrame.onload = doPrint;
             }
         }
     } catch (error) {
