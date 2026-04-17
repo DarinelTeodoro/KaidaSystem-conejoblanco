@@ -81,17 +81,6 @@ try {
     $stmtUpdate = $cnx->prepare("UPDATE comandas SET estado = 'finalizado' WHERE id = :id");
     $stmtUpdate->execute([':id' => $comanda_id]);
 
-    // 4. Registrar en historial
-    $stmtHistorial = $cnx->prepare("
-        INSERT INTO pago_historial (pago_id, accion, user_id, fecha, datos_previos)
-        VALUES (:pago_id, 'creado', :user_id, :fecha, NULL)
-    ");
-    $stmtHistorial->execute([
-        ':pago_id' => $pago_id,
-        ':user_id' => $user_id,
-        ':fecha' => $fecha
-    ]);
-
     $cnx->commit();
     echo json_encode(['success' => true, 'pago_id' => $pago_id]);
 
@@ -107,38 +96,9 @@ function guardarPagoSimple($cnx, $pago_id, $data, $comanda_id)
     $metodo = $data['metodo'];
 
     if ($metodo === 'efectivo') {
-        $stmt = $cnx->prepare("
-            INSERT INTO pago_detalles 
-            (pago_id, metodo_pago, monto, propina_tipo, propina_valor, propina_calculada, monto_recibido, cambio)
-            VALUES (:pago_id, 'efectivo', :monto, :propina_tipo, :propina_valor, :propina_calculada, :recibido, :cambio)
-        ");
-        $stmt->execute([
-            ':pago_id' => $pago_id,
-            ':monto' => $data['monto'],
-            ':propina_tipo' => $data['propina_tipo'],
-            ':propina_valor' => $data['propina_valor'],
-            ':propina_calculada' => $data['propina_calculada'],
-            ':recibido' => $data['monto_recibido'],
-            ':cambio' => $data['cambio']
-        ]);
-
         $subtotal = $data['monto'] - $data['propina_calculada'];
         insert_venta($cnx, $comanda_id, $pago_id, null, $subtotal, 'efectivo', $data['propina_tipo'], $data['propina_valor'], $data['propina_calculada'], $data['monto'], $data['monto_recibido'], $data['cambio']);
     } else {
-        $stmt = $cnx->prepare("
-            INSERT INTO pago_detalles 
-            (pago_id, metodo_pago, monto, propina_tipo, propina_valor, propina_calculada, referencia_tarjeta)
-            VALUES (:pago_id, 'tarjeta', :monto, :propina_tipo, :propina_valor, :propina_calculada, :referencia)
-        ");
-        $stmt->execute([
-            ':pago_id' => $pago_id,
-            ':monto' => $data['monto'],
-            ':propina_tipo' => $data['propina_tipo'],
-            ':propina_valor' => $data['propina_valor'],
-            ':propina_calculada' => $data['propina_calculada'],
-            ':referencia' => $data['referencia_tarjeta'] ?? null
-        ]);
-
         $subtotal = $data['monto'] - $data['propina_calculada'];
         insert_venta($cnx, $comanda_id, $pago_id, null, $subtotal, 'tarjeta', $data['propina_tipo'], $data['propina_valor'], $data['propina_calculada'], $data['monto'], null, null);
     }
@@ -146,41 +106,6 @@ function guardarPagoSimple($cnx, $pago_id, $data, $comanda_id)
 
 function guardarPagoMixto($cnx, $pago_id, $data, $comanda_id)
 {
-    // Pago en efectivo
-    if ($data['monto_efectivo'] > 0) {
-        $stmtEfectivo = $cnx->prepare("
-            INSERT INTO pago_detalles 
-            (pago_id, metodo_pago, monto, propina_tipo, propina_valor, propina_calculada, monto_recibido, cambio)
-            VALUES (:pago_id, 'efectivo', :monto, :propina_tipo, :propina_valor, :propina_calculada, :recibido, :cambio)
-        ");
-        $stmtEfectivo->execute([
-            ':pago_id' => $pago_id,
-            ':monto' => $data['monto_efectivo'],
-            ':propina_tipo' => $data['propina_tipo'],
-            ':propina_valor' => $data['propina_valor'],
-            ':propina_calculada' => $data['propina_calculada'],
-            ':recibido' => $data['monto_recibido_efectivo'] ?? null,
-            ':cambio' => $data['cambio_efectivo'] ?? null
-        ]);
-    }
-
-    // Pago con tarjeta
-    if ($data['monto_tarjeta'] > 0) {
-        $stmtTarjeta = $cnx->prepare("
-            INSERT INTO pago_detalles 
-            (pago_id, metodo_pago, monto, propina_tipo, propina_valor, propina_calculada, referencia_tarjeta)
-            VALUES (:pago_id, 'tarjeta', :monto, :propina_tipo, :propina_valor, :propina_calculada, :referencia)
-        ");
-        $stmtTarjeta->execute([
-            ':pago_id' => $pago_id,
-            ':monto' => $data['monto_tarjeta'],
-            ':propina_tipo' => $data['propina_tipo'],
-            ':propina_valor' => $data['propina_valor'],
-            ':propina_calculada' => $data['propina_calculada'],
-            ':referencia' => $data['referencia_tarjeta'] ?? null
-        ]);
-    }
-
     $subtotal = ($data['monto_tarjeta'] + $data['monto_efectivo']) - $data['propina_calculada'];
     $total = $data['monto_efectivo'] + $data['monto_tarjeta'];
     insert_venta($cnx, $comanda_id, $pago_id, 0, $subtotal, 'efectivo', $data['propina_tipo'], $data['propina_valor'], $data['propina_calculada'], $total, $data['monto_efectivo'], 0);
@@ -190,42 +115,6 @@ function guardarPagoMixto($cnx, $pago_id, $data, $comanda_id)
 function guardarCuentasSeparadas($cnx, $pago_id, $data, $comanda_id)
 {
     foreach ($data['cuentas'] as $index => $cuenta) {
-        // Insertar cuenta
-        $stmtCuenta = $cnx->prepare("
-            INSERT INTO pago_cuentas 
-            (pago_id, numero_cuenta, metodo_pago, subtotal, propina_tipo, propina_valor, propina_calculada, 
-             total_cuenta, monto_recibido, cambio, referencia_tarjeta)
-            VALUES (:pago_id, :numero, :metodo, :subtotal, :propina_tipo, :propina_valor, :propina_calculada,
-                    :total, :recibido, :cambio, :referencia)
-        ");
-        $stmtCuenta->execute([
-            ':pago_id' => $pago_id,
-            ':numero' => $index + 1,
-            ':metodo' => $cuenta['metodo_pago'],
-            ':subtotal' => $cuenta['subtotal'],
-            ':propina_tipo' => $cuenta['propina_tipo'],
-            ':propina_valor' => $cuenta['propina_valor'],
-            ':propina_calculada' => $cuenta['propina_calculada'],
-            ':total' => $cuenta['total'],
-            ':recibido' => $cuenta['monto_recibido'] ?? null,
-            ':cambio' => $cuenta['cambio'] ?? null,
-            ':referencia' => $cuenta['referencia_tarjeta'] ?? null
-        ]);
-
-        $id_cuenta = (int) $cnx->lastInsertId();
-
-        // Relacionar productos con la cuenta
-        foreach ($cuenta['items'] as $item_id) {
-            $stmtRelacion = $cnx->prepare("
-                INSERT INTO pago_cuenta_productos (id_cuenta, item_id)
-                VALUES (:id_cuenta, :item_id)
-            ");
-            $stmtRelacion->execute([
-                ':id_cuenta' => $id_cuenta,
-                ':item_id' => $item_id
-            ]);
-        }
-
         insert_venta($cnx, $comanda_id, $pago_id, $index+1, $cuenta['subtotal'], $cuenta['metodo_pago'], $cuenta['propina_tipo'], $cuenta['propina_valor'], $cuenta['propina_calculada'], $cuenta['total'], $cuenta['monto_recibido'], $cuenta['cambio']);
     }
 }

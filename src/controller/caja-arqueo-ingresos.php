@@ -17,9 +17,16 @@ $ventas->bindParam(":fecha_last", $data_last['fecha']);
 $ventas->bindParam(":fecha_cut", $fecha);
 $ventas->execute();
 $data_ventas = $ventas->fetch(PDO::FETCH_ASSOC);
-$real = floatval($data_last['corte']) + (floatval($data_ventas['recibido']) - floatval($data_ventas['cambio']));
 
-$init = $conexion->prepare('INSERT INTO caja(inicial, corte, usuario, cantidad_real, fecha_inicial, fecha) VALUES (:inicial, :corte, :usuario, :real, :fecha_init, :fecha)');
+$gastos = $conexion->prepare("SELECT SUM(cantidad) AS cantidad FROM gastos_extras WHERE fecha > :fechaInit AND fecha < :fechaFinish");
+$gastos->bindParam(":fechaInit", $data_last['fecha']);
+$gastos->bindParam(":fechaFinish", $fecha);
+$gastos->execute();
+$data_gastos = $gastos->fetch(PDO::FETCH_ASSOC);
+
+$real = floatval($data_last['corte']) + (floatval($data_ventas['recibido']) - floatval($data_ventas['cambio'])) - $data_gastos['cantidad'];
+
+$init = $conexion->prepare('INSERT INTO caja(tipo, inicial, corte, usuario, cantidad_real, fecha_inicial, fecha) VALUES (2, :inicial, :corte, :usuario, :real, :fecha_init, :fecha)');
 $init->bindParam(':inicial', $data_last['corte']);
 $init->bindParam(':corte', $cantidad);
 $init->bindParam(':usuario', $_SESSION['data-useractive']);
@@ -39,7 +46,7 @@ if ($residuo > 0) {
 
 if ($init) {
     $response['status'] = 'EXITO';
-    $response['message'] = 'Corte Realizado -> '. $resultado;
+    $response['message'] = 'Corte Realizado: '. $resultado;
 } else {
     $response['status'] = 'ERROR';
     $response['message'] = 'No se pudo enviar la información. Intente nuevamente';

@@ -164,3 +164,12 @@ function inicializarControlFechas() {
 $(document).ready(function () {
     inicializarControlFechas();
 });
+
+document.addEventListener('click', e => {
+    if (e.target.id === 'open_modal_montoinicial') {
+        document.getElementById('modal_monto_inicial')?.classList.add('visible');
+    }
+    if (e.target.id === 'close_modal_montoinicial') {
+        document.getElementById('modal_monto_inicial')?.classList.remove('visible');
+    }
+});

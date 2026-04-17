@@ -8,7 +8,7 @@ $fecha = date('Y-m-d H:i:s');
 $cantidad = $_POST['amount_caja'];
 
 $conexion = new Conexion();
-$init = $conexion->prepare('INSERT INTO caja(inicial, corte, usuario, cantidad_real, fecha_inicial, fecha) VALUES (:inicial, :corte, :usuario, :real, :fecha_init, :fecha)');
+$init = $conexion->prepare('INSERT INTO caja(tipo, inicial, corte, usuario, cantidad_real, fecha_inicial, fecha) VALUES (1, :inicial, :corte, :usuario, :real, :fecha_init, :fecha)');
 $init->bindParam(':inicial', $cantidad);
 $init->bindParam(':corte', $cantidad);
 $init->bindParam(':usuario', $_SESSION['data-useractive']);

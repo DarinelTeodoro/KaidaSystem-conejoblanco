@@ -1,6 +1,91 @@
 /*.container_main_home {
 
 }*/
+.form-control:focus {
+    box-shadow: none;
+}
+
+.input-group-text {
+    font-family: "Pompiere", sans-serif;
+    font-weight: bold;
+}
+
+.btn-add {
+    padding: 3px 20px;
+    border: none;
+}
+
+.btn-add {
+    background: rgb(0, 139, 57, 0.7);
+    color: #ffffff;
+}.btn-add:hover {
+    background: rgb(0, 139, 57, 0.9);
+}
+
+
+/*Estilos de Modal*/
+.fade_modal_system {
+    height: 100%;
+    width: 100%;
+
+    background: rgb(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container_form_modal {
+    height: 500px;
+    width: 500px;
+
+    background: rgb(255, 255, 255);
+}
+.head_form_modal {
+    height: 60px;
+    width: 100%;
+    padding: 0px 15px;
+
+    background: rgb(23, 30, 35);
+    color: rgb(255, 255, 255);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.icon_close_modal {
+    font-size: 1.3rem;
+    font-weight: bolder;
+
+    color: rgb(255, 255, 255, 0.7);
+
+    cursor: pointer;
+}.icon_close_modal:hover {
+    color: rgb(255, 255, 255, 0.9);
+}
+
+.body_form_modal {
+    height: calc(100% - 60px);
+    width: 100%;
+
+    overflow-y: auto;
+}
+
+@media (width < 570px) {
+    .container_form_modal {
+        width: 100%;
+    }
+}
+
+@media (height < 550px) {
+    .container_form_modal {
+        height: 100%;
+    }
+}
+
 
 .system_navbar_general {
     height: 80px;

@@ -10,17 +10,18 @@ if (!isset($_POST['dia']) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $_POST['dia'])
 }
 
 $fecha = $_POST['dia'];
+$fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
+$fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 $cnx = new Conexion();
 
 try {
     $stmtTotal_comandas = $cnx->prepare("
         SELECT SUM(total_comanda) as total, COUNT(id_pago) as n_pagos
         FROM purchases
-        WHERE DATE(fecha_pago) = :fecha
+        WHERE fecha_pago > :fechaInit AND fecha_pago < :fechaFinish
     ");
-    $stmtTotal_comandas->execute([':fecha' => $fecha]);
+    $stmtTotal_comandas->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
     $totales_comandas = $stmtTotal_comandas->fetch(PDO::FETCH_ASSOC);
-
 
     $stmtTotal_ventas = $cnx->prepare("
     SELECT 
@@ -62,9 +63,9 @@ try {
         COUNT(CASE WHEN tipo_pago NOT IN ('efectivo', 'tarjeta') THEN 1 END) as count_otros
 
     FROM ventas
-    WHERE DATE(fecha) = :fecha
+    WHERE fecha > :fechaInit AND fecha < :fechaFinish
 ");
-    $stmtTotal_ventas->execute([':fecha' => $fecha]);
+    $stmtTotal_ventas->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
     $totales_ventas = $stmtTotal_ventas->fetch(PDO::FETCH_ASSOC);
 
     // Obtener todos los pagos de la fecha especificada
@@ -73,10 +74,10 @@ try {
         FROM purchases p
         LEFT JOIN comandas c ON p.comanda_id = c.id
         LEFT JOIN usuarios u ON c.user_id = u.username
-        WHERE DATE(p.fecha_pago) = :fecha
+        WHERE p.fecha_pago > :fechaInit AND p.fecha_pago < :fechaFinish
         ORDER BY c.id ASC
     ");
-    $stmt->execute([':fecha' => $fecha]);
+    $stmt->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
     $detalles_comanda = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
@@ -85,11 +86,12 @@ try {
         SELECT c.*, u.name
         FROM comandas c
         LEFT JOIN usuarios u ON c.user_id = u.username
-        WHERE DATE(c.created_at) = :fecha
+        WHERE c.created_at > :fechaInit
+        AND c.created_at < :fechaFinish
         AND estado != 'finalizado'
         ORDER BY c.id ASC
     ");
-    $mas_comandas->execute([':fecha' => $fecha]);
+    $mas_comandas->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
     $detalles_plus = $mas_comandas->fetchAll(PDO::FETCH_ASSOC);
 
 
@@ -468,17 +470,18 @@ try {
                             <tbody style="font-size: 0.85rem;">
                                 <?php
                                 $data_items = $cnx->prepare("
-                                    SELECT 
-                                        ci.nombre,
+                                    SELECT
+                                        nombre,
                                         COUNT(*) as cantidad_registros,
-                                        SUM(ci.precio) as suma_subtotal
-                                    FROM purchases p
-                                    LEFT JOIN comanda_items ci ON p.comanda_id = ci.comanda_id
-                                    WHERE DATE(p.fecha_pago) = :date 
-                                    GROUP BY ci.nombre
-                                    ORDER BY cantidad_registros DESC, ci.nombre ASC
+                                        SUM(precio) as suma_subtotal
+                                    FROM view_productos_vendidos
+                                    WHERE fecha_pago > :dateInit
+                                    AND fecha_pago < :dateFinish 
+                                    AND tipo != 'extra'
+                                    GROUP BY nombre, precio
+                                    ORDER BY cantidad_registros DESC, nombre ASC
                                 ");
-                                $data_items->execute([':date' => $fecha]);
+                                $data_items->execute([':dateInit' => $fecha_inicial, ':dateFinish' => $fecha_final]);
                                 $detalles_di = $data_items->fetchAll(PDO::FETCH_ASSOC);
 
                                 if (count($detalles_di) > 0) {
@@ -517,18 +520,17 @@ try {
                                 <?php
                                 $data_extras = $cnx->prepare("
                                     SELECT 
-                                        cic.nombre,
-                                        SUM(cic.qty) as cantidad_registros,
-                                        cic.precio as precio_extra
-                                    FROM purchases p
-                                    LEFT JOIN comanda_items ci ON p.comanda_id = ci.comanda_id
-                                    LEFT JOIN comanda_item_componentes cic ON ci.id = cic.item_id
-                                    WHERE DATE(p.fecha_pago) = :date 
-                                    AND cic.kind = 'extra'
-                                    GROUP BY cic.nombre
-                                    ORDER BY cantidad_registros DESC, cic.nombre ASC
+                                        nombre,
+                                        SUM(qty) as cantidad_registros,
+                                        precio as precio_extra
+                                    FROM view_productos_vendidos
+                                    WHERE fecha_pago > :dateInit
+                                    AND fecha_pago < :dateFinish 
+                                    AND tipo = 'extra'
+                                    GROUP BY nombre, precio
+                                    ORDER BY cantidad_registros DESC, nombre ASC
                                 ");
-                                $data_extras->execute([':date' => $fecha]);
+                                $data_extras->execute([':dateInit' => $fecha_inicial, ':dateFinish' => $fecha_final]);
                                 $detalles_ex = $data_extras->fetchAll(PDO::FETCH_ASSOC);
 
                                 if (count($detalles_ex) > 0) {

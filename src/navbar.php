@@ -96,7 +96,7 @@ $caja = data_servicio();
         <div class="icon_responsive"><i class="bi bi-people"></i></div>
         <div class="text_menu_responsive">Usuarios</div>
     </button>
-    <button type="submit" class="option_responsive" name="logout">
+    <button type="submit" class="option_logout_responsive" name="logout">
         <div class="icon_responsive"><i class="bi bi-power"></i></div>
         <div class="text_menu_responsive">Salir</div>
     </button>

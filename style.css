@@ -360,7 +360,8 @@ textarea {
     border: none;
 }
 
-.option_responsive {
+.option_responsive,
+.option_logout_responsive {
     height: 100%;
     min-width: 76.75px;
     padding: 3.2px 4.8px;
@@ -377,7 +378,8 @@ textarea {
     text-decoration: none;
 }
 
-.option_responsive:hover {
+.option_responsive:hover,
+.option_logout_responsive:hover {
     background: rgb(255, 255, 255, 0.2);
 }
 

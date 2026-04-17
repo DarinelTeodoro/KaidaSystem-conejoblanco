@@ -206,6 +206,8 @@ function cobrar_comanda(idcomanda) {
         dataType: "json",
         success: function (data) {
             renderDetalleCobro(data);
+            document.getElementById('ticketFrame').src = `../../controller/comanda-ticket.php?comanda_id=${idcomanda}`;
+            document.getElementById('ticketFrameAuxiliar').src = `../../controller/comanda-ticket.php?comanda_id=${idcomanda}`;
         },
         error: function () {
             modalBody.innerHTML = '<div class="p-3 text-center text-danger">Error al cargar los detalles</div>';
@@ -593,12 +595,12 @@ function mostrarPagoMixto(total) {
                 </div>
                 <div id="propina-mixto-container"></div>
                 <div class="mb-2">
-                    <label class="form-label">Monto en efectivo ($)</label>
-                    <input type="number" class="form-control" id="monto-efectivo-mixto" min="0" step="0.01" oninput="calcularRestanteTarjeta(${total})">
+                    <label class="form-label">Pagado con Tarjeta ($)</label>
+                    <input type="number" class="form-control" id="monto-tarjeta-mixto" min="0" step="0.01" oninput="calcularRestanteEfectivo(${total})">
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Restante a pagar con tarjeta:</label>
-                    <div class="fs-5 fw-bold text-danger" id="restante-tarjeta">$${formatMoney(total)}</div>
+                    <label class="form-label">Resta pagar en efectivo:</label>
+                    <div class="fs-5 fw-bold text-danger" id="restante-efectivo">$${formatMoney(total)}</div>
                 </div>
                 <button type="button" class="btn btn-danger w-100" onclick="procesarPagoMixto(${total})">Cobrar</button>
             </div>
@@ -614,14 +616,14 @@ function togglePropinaMixto(total) {
         container.innerHTML = `
             <div class="mb-2">
                 <label class="form-label">Porcentaje de propina (%)</label>
-                <input type="number" class="form-control" id="propina-porcentaje-mixto" min="0" max="100" step="0.1" oninput="calcularRestanteTarjeta(${total})">
+                <input type="number" class="form-control" id="propina-porcentaje-mixto" min="0" max="100" step="0.1" oninput="calcularRestanteEfectivo(${total})">
             </div>
         `;
     } else if (tipo === 'monto') {
         container.innerHTML = `
             <div class="mb-2">
                 <label class="form-label">Monto de propina ($)</label>
-                <input type="number" class="form-control" id="propina-monto-mixto" min="0" step="0.01" oninput="calcularRestanteTarjeta(${total})">
+                <input type="number" class="form-control" id="propina-monto-mixto" min="0" step="0.01" oninput="calcularRestanteEfectivo(${total})">
             </div>
         `;
     } else {
@@ -629,8 +631,8 @@ function togglePropinaMixto(total) {
     }
 }
 
-function calcularRestanteTarjeta(total) {
-    const montoEfectivo = parseFloat(document.getElementById('monto-efectivo-mixto')?.value) || 0;
+function calcularRestanteEfectivo(total) {
+    const montoTarjeta = parseFloat(document.getElementById('monto-tarjeta-mixto')?.value) || 0;
     const tipoPropina = document.getElementById('tipo-propina-mixto')?.value;
     let propina = 0;
 
@@ -642,9 +644,9 @@ function calcularRestanteTarjeta(total) {
     }
 
     const totalConPropina = total + propina;
-    const restante = Math.max(0, totalConPropina - montoEfectivo);
+    const restante = Math.max(0, totalConPropina - montoTarjeta);
 
-    document.getElementById('restante-tarjeta').textContent = '$' + formatMoney(restante);
+    document.getElementById('restante-efectivo').textContent = '$' + formatMoney(restante);
 }
 
 /***************************************************************************CUENTAS SEPARADAS************************************************************/
@@ -1339,7 +1341,7 @@ function procesarPagoTarjeta(total) {
 
 function procesarPagoMixto(total) {
     const tipoPropina = document.getElementById('tipo-propina-mixto').value;
-    const montoEfectivo = parseFloat(document.getElementById('monto-efectivo-mixto').value) || 0;
+    const montoTarjeta = parseFloat(document.getElementById('monto-tarjeta-mixto').value) || 0;
     let propinaValor = 0;
     let propinaCalculada = 0;
 
@@ -1352,7 +1354,7 @@ function procesarPagoMixto(total) {
     }
 
     const totalConPropina = total + propinaCalculada;
-    const montoTarjeta = Math.max(0, totalConPropina - montoEfectivo);
+    const montoEfectivo = Math.max(0, totalConPropina - montoTarjeta);
 
     if (montoEfectivo == 0) {
         show_alert('ALERTA', 'El metodo de pago no es mixto, es pago con "TARJETA"')
@@ -1606,23 +1608,16 @@ $(document).ready(function () {
 
 
 function ver_ticket(comanda_id) {
-    document.getElementById('modal_ticket').classList.add('visible');
-    document.getElementById('ticketFrame').src = `../../controller/comanda-ticket.php?comanda_id=${comanda_id}`;
-    document.getElementById('ticketFrameAuxiliar').src = `../../controller/comanda-ticket.php?comanda_id=${comanda_id}`;
+    printTicket();
 }
 
-document.getElementById('close_modal_ticket')
-    ?.addEventListener('click', () => {
-        document.getElementById('modal_ticket')?.classList.remove('visible');
-    });
 
-document.getElementById('print-ticket')?.addEventListener('click', () => {
+function printTicket() {
     const ticketFrame = document.getElementById('ticketFrameAuxiliar');
 
     try {
         if (ticketFrame?.contentWindow) {
             const doPrint = function () {
-                // ✅ Limpiar el handler inmediatamente para que no se dispare de nuevo
                 ticketFrame.onload = null;
 
                 const iframeDoc = ticketFrame.contentDocument || ticketFrame.contentWindow.document;
@@ -1640,14 +1635,12 @@ document.getElementById('print-ticket')?.addEventListener('click', () => {
             };
 
             if (ticketFrame.contentDocument?.readyState === 'complete') {
-                // El iframe ya cargó, imprimir directo
                 doPrint();
             } else {
-                // Esperar a que cargue y luego imprimir
                 ticketFrame.onload = doPrint;
             }
         }
     } catch (error) {
         if (ticketFrame?.src) window.open(ticketFrame.src, '_blank');
     }
-});
+}

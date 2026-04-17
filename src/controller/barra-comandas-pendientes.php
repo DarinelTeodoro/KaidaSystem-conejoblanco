@@ -15,11 +15,9 @@ try {
         FROM comandas 
         WHERE estado = 'pendiente'
         AND barra = 1
-        AND DATE(created_at) = :fecha
         ORDER BY id ASC
     ");
 
-    $stmt->bindParam(':fecha', $fecha);
     $stmt->execute();
     $comandas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -37,7 +35,7 @@ try {
 
         foreach ($batches as $batch) {
             // Obtener items del batch que sean de barra o ambos
-            $stmtI = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid AND batch_id = :bid AND (destino = 'Barra' OR destino = 'Ambos') AND ready_barra = 0 ORDER BY id ASC");
+            $stmtI = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid AND batch_id = :bid AND (destino = 'Barra' OR destino = 'Ambos') AND ready_barra = 0 AND tipo != 'extra' ORDER BY id ASC");
             $stmtI->execute([':cid' => $comanda['id'], ':bid' => $batch['id']]);
             $items = $stmtI->fetchAll(PDO::FETCH_ASSOC);
 
@@ -50,49 +48,46 @@ try {
             $batchTieneItems = false; // Bandera para este batch específico
 
             foreach ($items as $item) {
-                if ($item['producto_id'] > 0) {
-                    $categoria = $cnx->prepare('SELECT mc.categoria FROM menu_categorias mc LEFT JOIN menu_productos mp ON mc.id = mp.id_categoria WHERE mp.id = :id');
-                    $categoria->execute([':id' => $item['producto_id']]);
-                    $resultCategoria = $categoria->fetch(PDO::FETCH_ASSOC);
-                } else {
-                    $resultCategoria['categoria'] = 'NOTING';
-                }
-
                 // Obtener componentes del item que sean de barra
                 $stmtComp = $cnx->prepare("SELECT * FROM comanda_item_componentes WHERE item_id = :iid AND destino = 'Barra' ORDER BY id ASC");
                 $stmtComp->execute([':iid' => $item['id']]);
                 $componentes = $stmtComp->fetchAll(PDO::FETCH_ASSOC);
 
+
+                $stmtE = $cnx->prepare("SELECT * FROM comanda_items WHERE item_id = :id ORDER BY id ASC");
+                $stmtE->execute([':id' => $item['id']]);
+                $itemExt = $stmtE->fetchAll(PDO::FETCH_ASSOC);
+
                 $subtotal = (float) $item['precio'] * (int) $item['qty'];
                 $extras = [];
                 $componentesAgrupados = [];
 
+                foreach ($itemExt as $ext) {
+                    $totalExtra = (float) $ext['precio'] * (int) $ext['qty'];
+                    $extras[] = [
+                        'nombre' => $ext['nombre'],
+                        'qty' => $ext['qty'],
+                        'precio' => $ext['precio'],
+                        'total' => $totalExtra
+                    ];
+                    $subtotal += $totalExtra;
+                }
+
                 // Procesar componentes
                 foreach ($componentes as $comp) {
-                    if ($comp['kind'] === 'extra') {
-                        $totalExtra = (float) $comp['precio'] * (int) $comp['qty'];
-                        $extras[] = [
-                            'nombre' => $comp['nombre'],
-                            'qty' => $comp['qty'],
-                            'precio' => $comp['precio'],
-                            'total' => $totalExtra
-                        ];
-                        $subtotal += $totalExtra;
-                    } else {
-                        $grupoId = $comp['grupo_id'] ?? 0;
-                        $grupoNombre = $comp['grupo_nombre'] ?? '';
+                    $grupoId = $comp['grupo_id'] ?? 0;
+                    $grupoNombre = $comp['grupo_nombre'] ?? '';
 
-                        if (!isset($componentesAgrupados[$grupoId])) {
-                            $componentesAgrupados[$grupoId] = [
-                                'nombre' => $grupoNombre,
-                                'items' => []
-                            ];
-                        }
-                        $componentesAgrupados[$grupoId]['items'][] = [
-                            'nombre' => $comp['nombre'],
-                            'kind' => $comp['kind']
+                    if (!isset($componentesAgrupados[$grupoId])) {
+                        $componentesAgrupados[$grupoId] = [
+                            'nombre' => $grupoNombre,
+                            'items' => []
                         ];
                     }
+                    $componentesAgrupados[$grupoId]['items'][] = [
+                        'nombre' => $comp['nombre'],
+                        'kind' => $comp['kind']
+                    ];
                 }
 
                 $itemsData[] = [
@@ -103,7 +98,6 @@ try {
                     'precio' => $item['precio'],
                     'nota' => $item['nota'],
                     'subtotal' => $subtotal,
-                    'categoria' => $resultCategoria['categoria'],
                     'extras' => $extras,
                     'componentes' => $componentesAgrupados
                 ];

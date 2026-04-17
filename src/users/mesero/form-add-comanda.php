@@ -136,7 +136,7 @@ if (isset($_POST['logout'])) {
     </form>
 
 
-    <!--Contenedor Modal Personalizar Combo-->
+    <!--Contenedor Modal Personalizar Combo
     <div class="fade_system fixed-top" id="comanda_combo">
         <div class="system_modal">
             <div class="header_modal">
@@ -147,8 +147,7 @@ if (isset($_POST['logout'])) {
 
             </div>
         </div>
-    </div>
-
+    </div>-->
 
     <!--Contenedor Modal Seleccionar Variante-->
     <div class="fade_system fixed-top" id="variante_producto">
@@ -305,7 +304,7 @@ if (isset($_POST['logout'])) {
     function renderCatalogo(combos, categorias) {
         let html = '';
 
-        // ── Sección COMBOS ────────────────────────────────────────────
+        /* ── Sección COMBOS ────────────────────────────────────────────
         html += '<div class="division_categorias_secciones"><span class="fw-bold">COMBOS</span></div>';
         html += '<div class="carrousel_productos pt-2 pb-2 mb-1">';
 
@@ -334,7 +333,7 @@ if (isset($_POST['logout'])) {
                 </div>`;
             });
         }
-        html += '</div>'; // fin carrousel combos
+        html += '</div>';*/
 
         // ── Secciones por categoría ───────────────────────────────────
         if (categorias && categorias.length) {
@@ -474,7 +473,7 @@ if (isset($_POST['logout'])) {
 
 
 
-    //Seleccionar combo
+    /* Seleccionar combo
     document.getElementById('close_modal_comandacombo')
         ?.addEventListener('click', () => {
             document.getElementById('comanda_combo')
@@ -494,7 +493,7 @@ if (isset($_POST['logout'])) {
                 $("#body_modal_comandacombo").html(response);
             }
         });
-    }
+    }*/
 
 
 
@@ -664,7 +663,7 @@ if (isset($_POST['logout'])) {
         }
 
 
-        function addCombo({ combo_id, combo_nombre, combo_precio, seleccion, incluidos, note, df }) {
+        /*function addCombo({ combo_id, combo_nombre, combo_precio, seleccion, incluidos, note, df }) {
             // seleccion: [{grupo_id, grupo_nombre, producto_id, producto_nombre}]
             // incluidos: [{producto_id, producto_nombre}]
             state.items.push({
@@ -682,7 +681,7 @@ if (isset($_POST['logout'])) {
             });
             resaltar();
             render();
-        }
+        }*/
 
         function setEditing(uid) {
             state.editingUid = uid;
@@ -1051,7 +1050,7 @@ if (isset($_POST['logout'])) {
             render,
             addProductSimple,
             addProductVariant,
-            addCombo,
+            //addCombo,
             removeItem,
             setEditing,
             closeEditing,

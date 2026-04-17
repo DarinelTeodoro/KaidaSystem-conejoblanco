@@ -54,6 +54,21 @@ foreach ($batches as $b) {
   if (!$items)
     continue;
 
+  // Separar productos/variantes de los extras
+  $productos = array_filter($items, fn($it) => $it['tipo'] === 'product' || $it['tipo'] === 'variante');
+  $extrasSueltos = array_filter($items, fn($it) => $it['tipo'] === 'extra' && ($it['item_id'] == 0 || $it['item_id'] === null));
+  
+  // Crear un mapa de extras por item_id
+  $extrasPorProducto = [];
+  foreach ($items as $it) {
+    if ($it['tipo'] === 'extra' && $it['item_id'] > 0) {
+      if (!isset($extrasPorProducto[$it['item_id']])) {
+        $extrasPorProducto[$it['item_id']] = [];
+      }
+      $extrasPorProducto[$it['item_id']][] = $it;
+    }
+  }
+
   echo "<div class='p-2 mb-2' style='background:#fff; border:1px solid #eee; border-radius:10px; background: rgb(111, 66, 193, 0.2);'>
     <div class='d-flex justify-content-between align-items-center'>
       <div class='fw-bold'>{$seq}° Orden</div>
@@ -62,34 +77,28 @@ foreach ($batches as $b) {
     <div class='text-muted' style='font-size:.85rem;'>" . ($seq === 1 ? "Creación de comanda" : "Agregado después") . "</div>
   </div>";
 
-  foreach ($items as $it) {
+  // Mostrar productos/variantes con sus extras correspondientes
+  foreach ($productos as $it) {
     $itemId = (int) $it['id'];
+    
+    // Obtener los extras que pertenecen a este producto
+    $extrasDelProducto = $extrasPorProducto[$itemId] ?? [];
 
-    if ($it['producto_id'] > 0) {
-      $categoria = $cnx->prepare('SELECT mc.categoria FROM menu_categorias mc LEFT JOIN menu_productos mp ON mc.id = mp.id_categoria WHERE mp.id = :id');
-      $categoria->execute([':id' => $it['producto_id']]);
-      $resultCategoria = $categoria->fetch(PDO::FETCH_ASSOC);
-    } else {
-      $resultCategoria['categoria'] = 'NOTING';
-    }
-
-    // componentes
+    // componentes del producto (incluidos y opcionales del combo)
     $stmtComp = $cnx->prepare("SELECT * FROM comanda_item_componentes WHERE item_id = :iid ORDER BY id ASC");
     $stmtComp->execute([':iid' => $itemId]);
     $comps = $stmtComp->fetchAll(PDO::FETCH_ASSOC);
 
     $subtotal = ((float) $it['precio']) * ((int) $it['qty']);
 
-    $extrasHtml = "";
     $detHtml = "";
 
-    // Separar extras del resto de componentes
-    $extras = array_filter($comps, fn($cp) => $cp['kind'] === 'extra');
-    $otros = array_filter($comps, fn($cp) => $cp['kind'] !== 'extra');
+    // Separar componentes que no son extras (incluidos y opcionales del combo)
+    $componentes = array_filter($comps, fn($cp) => $cp['kind'] !== 'extra');
 
-    // Agrupar componentes no-extra por grupo_id (para combos)
+    // Agrupar componentes por grupo_id (para combos)
     $grupos = [];
-    foreach ($otros as $cp) {
+    foreach ($componentes as $cp) {
       $grupoId = $cp['grupo_id'] ?? 0;
       $grupoNombre = $cp['grupo_nombre'] ?? '';
 
@@ -104,37 +113,26 @@ foreach ($batches as $b) {
 
     // Generar HTML para componentes agrupados
     foreach ($grupos as $grupo) {
-      if (empty($grupo['nombre'])) {
-        // Si no hay nombre de grupo, mostrar items individualmente
-        foreach ($grupo['items'] as $cp) {
-          if ($cp['kind'] == 'variante') {
-            $detHtml .= '';
-          } else {
-            $detHtml .= "<div class='text-muted' style='font-size:.85rem;'><span class='badge bg-secondary' style='font-size:0.6rem;'>{$cp['kind']}</span> {$cp['nombre']}</div>";
-          }
-        }
-      } else {
-        // Mostrar grupo con sus items
-        $detHtml .= "<div class='mb-1'>";
-        $detHtml .= "<span class='text-muted fw-bold' style='font-size:.85rem;'>{$grupo['nombre']}:</span>";
-        $detHtml .= "<ul class='m-0 ps-3' style='list-style-type: none; padding-left: 0 !important;'>";
+      $detHtml .= "<div class='mb-1'>";
+      $detHtml .= "<span class='text-muted fw-bold' style='font-size:.85rem;'>{$grupo['nombre']}:</span>";
+      $detHtml .= "<ul class='m-0 ps-3' style='list-style-type: none; padding-left: 0 !important;'>";
 
-        foreach ($grupo['items'] as $item) {
-          $detHtml .= "<li style='margin-left: 0; padding-left: 0; font-size:.85rem;'>";
-          $detHtml .= "<i class='bi bi-check-circle-fill " . ($item['kind'] === 'incluido' ? 'text-success' : 'text-primary') . "' style='font-size:0.7rem;'></i> ";
-          $detHtml .= $item['nombre'];
-          $detHtml .= "</li>";
-        }
-
-        $detHtml .= "</ul>";
-        $detHtml .= "</div>";
+      foreach ($grupo['items'] as $item) {
+        $detHtml .= "<li style='margin-left: 0; padding-left: 0; font-size:.85rem;'>";
+        $detHtml .= "<i class='bi bi-check-circle-fill " . ($item['kind'] === 'incluido' ? 'text-success' : 'text-primary') . "' style='font-size:0.7rem;'></i> ";
+        $detHtml .= $item['nombre'] . " x{$item['qty']}";
+        $detHtml .= "</li>";
       }
+
+      $detHtml .= "</ul>";
+      $detHtml .= "</div>";
     }
 
-    // Procesar extras
-    foreach ($extras as $cp) {
-      $extrasHtml .= "<div class='text-muted' style='font-size:.85rem;'>+ {$cp['nombre']} x{$cp['qty']} ($" . number_format($cp['precio'] * $cp['qty'], 2) . ")</div>";
-      $subtotal += ((float) $cp['precio']) * ((int) $cp['qty']);
+    // Mostrar extras de comanda_items que pertenecen a este producto
+    $extrasHtml = "";
+    foreach ($extrasDelProducto as $extra) {
+      $extrasHtml .= "<div class='text-muted' style='font-size:.85rem;'>+ {$extra['nombre']} x{$extra['qty']} ($" . number_format($extra['precio'] * $extra['qty'], 2) . ")</div>";
+      $subtotal += ((float) $extra['precio']) * ((int) $extra['qty']);
     }
 
     $totalComanda += $subtotal;
@@ -142,7 +140,7 @@ foreach ($batches as $b) {
     echo "<div class='p-2 mb-2' style='background:#fff; border:1px solid rgb(0, 0, 0, 0.3); border-radius:10px;'>
       <div class='d-flex justify-content-between'>
         <div style='flex:1;'>
-          <div class='fw-bold d-flex align-items-center'>" . htmlspecialchars($it['nombre']) . ($resultCategoria['categoria'] == 'Café Caliente' ? '<span class="bg-warning p-1 pt-0 pb-0 ms-2 rounded shadow d-flex align-items-center"><i class="bi bi-thermometer-sun"></i> <span style="font-size: 0.8rem;">Caliente</span></span>' : ($resultCategoria['categoria'] == 'A las Rocas' ? '<span class="bg-info p-1 pt-0 pb-0 ms-2 rounded shadow d-flex align-items-center"><i class="bi bi-thermometer-snow"></i> <span style="font-size: 0.8rem;">Frio</span></span>' : '')) . "</div>
+          <div class='fw-bold d-flex align-items-center'>" . htmlspecialchars($it['nombre']) . " </div>
           {$detHtml}
           {$extrasHtml}
           " . (!empty($it['nota']) ? "<div class='p-1 mt-2'><div><span class='text-muted' style='font-size:.85rem;'>Nota:</span></div><div>" . htmlspecialchars($it['nota']) . "</div></div>" : "") . "
@@ -152,6 +150,26 @@ foreach ($batches as $b) {
       <div class='d-flex justify-content-between'>
         <div></div>
         <div><i class='text-muted'>Subtotal = </i> <span class='text-primary fw-bold'>$" . number_format($subtotal, 2) . "</span></div>
+      </div>
+    </div>";
+  }
+
+  // Mostrar extras independientes (que no pertenecen a ningún producto específico)
+  foreach ($extrasSueltos as $extra) {
+    $subtotalExtra = ((float) $extra['precio']) * ((int) $extra['qty']);
+    $totalComanda += $subtotalExtra;
+
+    echo "<div class='p-2 mb-2' style='background:#fff; border:1px solid rgb(0, 0, 0, 0.3); border-radius:10px;'>
+      <div class='d-flex justify-content-between'>
+        <div style='flex:1;'>
+          <div class='fw-bold'>➕ " . htmlspecialchars($extra['nombre']) . " x{$extra['qty']}</div>
+          " . (!empty($extra['nota']) ? "<div class='p-1 mt-2'><div><span class='text-muted' style='font-size:.85rem;'>Nota:</span></div><div>" . htmlspecialchars($extra['nota']) . "</div></div>" : "") . "
+        </div>
+        <div class='text-muted'>$" . number_format($extra['precio'], 2) . "</div>
+      </div>
+      <div class='d-flex justify-content-between'>
+        <div></div>
+        <div><i class='text-muted'>Subtotal = </i> <span class='text-primary fw-bold'>$" . number_format($subtotalExtra, 2) . "</span></div>
       </div>
     </div>";
   }

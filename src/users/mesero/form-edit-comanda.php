@@ -271,7 +271,7 @@ $data_comanda = detalle_comanda($id_comanda);
     function renderCatalogo(combos, categorias) {
         let html = '';
 
-        // ── Sección COMBOS ────────────────────────────────────────────
+        /* ── Sección COMBOS ────────────────────────────────────────────
         html += '<div class="division_categorias_secciones"><span class="fw-bold">COMBOS</span></div>';
         html += '<div class="carrousel_productos pt-2 pb-2 mb-1">';
 
@@ -300,7 +300,7 @@ $data_comanda = detalle_comanda($id_comanda);
                 </div>`;
             });
         }
-        html += '</div>'; // fin carrousel combos
+        html += '</div>'; */
 
         // ── Secciones por categoría ───────────────────────────────────
         if (categorias && categorias.length) {
@@ -405,10 +405,6 @@ $data_comanda = detalle_comanda($id_comanda);
         ComandaStore.state.items = [];
         ComandaStore.render();
 
-        $('#productos_seleccionables').load('../../controller/mesero-productos-comanda.php', function () {
-            if (window.refiltrarProductosComanda) window.refiltrarProductosComanda();
-        });
-
         //cargarProductosComanda(true); // Usar la nueva función con forzar recarga
         // INICIALIZAR RECARGA AUTOMÁTICA DE PRODUCTOS
         inicializarRecargaProductos();
@@ -422,7 +418,7 @@ $data_comanda = detalle_comanda($id_comanda);
 
 
 
-    //Seleccionar combo
+    /*Seleccionar combo
     document.getElementById('close_modal_comandacombo')
         ?.addEventListener('click', () => {
             document.getElementById('comanda_combo')
@@ -442,7 +438,7 @@ $data_comanda = detalle_comanda($id_comanda);
                 $("#body_modal_comandacombo").html(response);
             }
         });
-    }
+    }*/
 
 
 
@@ -999,7 +995,7 @@ $data_comanda = detalle_comanda($id_comanda);
             render,
             addProductSimple,
             addProductVariant,
-            addCombo,
+            //addCombo,
             removeItem,
             setEditing,
             closeEditing,

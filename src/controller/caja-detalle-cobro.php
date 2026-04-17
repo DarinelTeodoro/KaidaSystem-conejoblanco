@@ -2,7 +2,7 @@
 session_start();
 include('../model/querys.php');
 
-$comanda_id = (int)($_POST['id'] ?? 0);
+$comanda_id = (int) ($_POST['id'] ?? 0);
 if (!$comanda_id) {
     http_response_code(400);
     exit('ID de comanda no válido');
@@ -50,7 +50,7 @@ foreach ($batches as $batch) {
     ];
 
     // Obtener items del batch
-    $stmtItems = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid AND batch_id = :bid ORDER BY id ASC");
+    $stmtItems = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid AND batch_id = :bid AND tipo != 'extra' ORDER BY id ASC");
     $stmtItems->execute([':cid' => $comanda_id, ':bid' => $batch['id']]);
     $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 
@@ -72,16 +72,21 @@ foreach ($batches as $batch) {
         $stmtComp->execute([':iid' => $item['id']]);
         $componentes = $stmtComp->fetchAll(PDO::FETCH_ASSOC);
 
-        foreach ($componentes as $comp) {
-            if ($comp['kind'] === 'extra') {
-                $itemDetalle['extras'][] = [
-                    'nombre' => $comp['nombre'],
-                    'qty' => $comp['qty'],
-                    'precio' => $comp['precio'],
-                    'total' => $comp['precio'] * $comp['qty']
+        $stmtExtras = $cnx->prepare("SELECT * FROM comanda_items WHERE item_id = :id ORDER BY id ASC");
+        $stmtExtras->execute([':id' => $item['id']]);
+        $array_extras = $stmtExtras->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($array_extras as $ext) {
+            $itemDetalle['extras'][] = [
+                    'nombre' => $ext['nombre'],
+                    'qty' => $ext['qty'],
+                    'precio' => $ext['precio'],
+                    'total' => $ext['precio'] * $ext['qty']
                 ];
-                $itemDetalle['subtotal'] += $comp['precio'] * $comp['qty'];
-            } else {
+                $itemDetalle['subtotal'] += $ext['precio'] * $ext['qty'];
+        }
+
+        foreach ($componentes as $comp) {
                 if ($item['tipo'] === 'combo') {
                     $grupo = $comp['grupo_nombre'] ?? 'Otros';
                     $itemDetalle['componentes'][$grupo][] = [
@@ -94,7 +99,6 @@ foreach ($batches as $batch) {
                         'kind' => $comp['kind']
                     ];
                 }
-            }
         }
 
         $batchDetalle['items'][] = $itemDetalle;

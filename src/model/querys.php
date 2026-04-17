@@ -299,30 +299,38 @@ function data_comandas($estado = null, $mesero)
 {
     $conexion = new Conexion();
     $fecha = date('Y-m-d');
+    $fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
+    $fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 
     if ($estado && in_array($estado, ['pendiente', 'finalizado'])) {
         $query = $conexion->prepare("
             SELECT c.*, MAX(cb.created_at) as primera_creacion
             FROM comandas c
             LEFT JOIN comanda_batches cb ON c.id = cb.comanda_id
-            WHERE c.estado = :estado AND c.user_id = :mesero AND DATE(c.created_at) = :date
+            WHERE c.estado = :estado AND c.user_id = :mesero
+            AND c.created_at > :fechaInit
+            AND c.created_at < :fechaFinish
             GROUP BY c.id
             ORDER BY primera_creacion DESC
         ");
         $query->bindParam(':estado', $estado);
         $query->bindParam(':mesero', $mesero);
-        $query->bindParam(':date', $fecha);
+        $query->bindParam(':fechaInit', $fecha_inicial);
+        $query->bindParam(':fechaFinish', $fecha_final);
     } else {
         $query = $conexion->prepare("
             SELECT c.*, MIN(cb.created_at) as primera_creacion
             FROM comandas c
             LEFT JOIN comanda_batches cb ON c.id = cb.comanda_id
-            WHERE c.user_id = :mesero AND DATE(c.created_at) = :date
+            WHERE c.user_id = :mesero
+            AND c.created_at > :fechaInit
+            AND c.created_at < :fechaFinish
             GROUP BY c.id
             ORDER BY primera_creacion DESC
         ");
         $query->bindParam(':mesero', $mesero);
-        $query->bindParam(':date', $fecha);
+        $query->bindParam(':fechaInit', $fecha_inicial);
+        $query->bindParam(':fechaFinish', $fecha_final);
     }
 
     $query->execute();
@@ -376,6 +384,8 @@ function data_comandas_caja($estado = null)
 {
     $conexion = new Conexion();
     $fecha = date('Y-m-d');
+    $fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
+    $fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 
     if ($estado && in_array($estado, ['pendiente', 'finalizado'])) {
         $query = $conexion->prepare("
@@ -384,25 +394,53 @@ function data_comandas_caja($estado = null)
             LEFT JOIN comanda_batches cb ON c.id = cb.comanda_id
             WHERE c.estado = :estado
             AND (c.cocina != 1 AND c.barra != 1)
-            AND DATE(c.created_at) = :fecha
+            AND c.created_at > :fechaInit
+            AND c.created_at < :fechaFinish
             GROUP BY c.id
             ORDER BY primera_creacion DESC
         ");
         $query->bindParam(':estado', $estado);
-        $query->bindParam('fecha', $fecha);
+        $query->bindParam(':fechaInit', $fecha_inicial);
+        $query->bindParam(':fechaFinish', $fecha_final);
     } else {
         $query = $conexion->prepare("
             SELECT c.*, MIN(cb.created_at) as primera_creacion
             FROM comandas c
             LEFT JOIN comanda_batches cb ON c.id = cb.comanda_id
-            WHERE DATE(c.created_at) = :fecha
+            WHERE c.created_at > :fechaInit
+            AND c.created_at < :fechaFinish
             GROUP BY c.id
             ORDER BY primera_creacion DESC
         ");
-        $query->bindParam('fecha', $fecha);
+
+        $query->bindParam(':fechaInit', $fecha_inicial);
+        $query->bindParam(':fechaFinish', $fecha_final);
     }
 
     $query->execute();
+    $data = $query->fetchAll(PDO::FETCH_ASSOC);
+
+    return !empty($data) ? $data : false;
+}
+
+
+
+
+function gastos($user)
+{
+    $conexion = new Conexion();
+    $fecha = date('Y-m-d');
+    $fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
+    $fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
+
+    $query = $conexion->prepare("
+        SELECT * FROM gastos_extras WHERE usuario = :usuario AND fecha > :fechaInit AND fecha < :fechaFinish
+    ");
+    $query->bindParam(':usuario', $user);
+    $query->bindParam(':fechaInit', $fecha_inicial);
+    $query->bindParam(':fechaFinish', $fecha_final);
+    $query->execute();
+
     $data = $query->fetchAll(PDO::FETCH_ASSOC);
 
     return !empty($data) ? $data : false;

@@ -78,7 +78,7 @@ if (isset($_POST['logout'])) {
             </div>
 
             <form method="post" action="" class="dropdown-menu p-0" style="width: 200px;">
-                <a href="corte-caja.php" type="sumbit" class="btn_dropdown" name="logout"><i class="bi bi-cash-coin me-2"></i>Corte de Caja</a>
+                <a href="caja.php" type="sumbit" class="btn_dropdown" name="logout"><i class="bi bi-cash-coin me-2"></i>Caja</a>
                 <button type="sumbit" class="btn_dropdown" name="logout"><i
                         class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión</button>
             </form>

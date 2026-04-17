@@ -587,7 +587,7 @@ function crearCardComanda(comanda, highlightKeys = new Set()) {
                         <div class="product-item ${isNuevo ? 'nuevo-item' : ''}" data-item-key="${itemKey}">
                             <div class="d-flex justify-content-between">
                                 <div>
-                                    <strong>${item.nombre || 'Producto'}</strong>${item.categoria === 'Café Caliente' ? '<span class="bg-warning combo-badge"><i class="bi bi-thermometer-sun"></i> <span class="fw-bold" style="font-size: 0.8rem;">Caliente</span></span>' : (item.categoria === 'A las Rocas' ? '<span class="bg-info combo-badge"><i class="bi bi-thermometer-snow"></i> <span class="fw-bold" style="font-size: 0.8rem;">Frio</span></span>' : '')}
+                                    <strong>${item.nombre || 'Producto'}</strong>
                                     ${item.tipo === 'combo' ? '<span class="combo-badge">COMBO</span>' : ''}
                                 </div>
                             </div>

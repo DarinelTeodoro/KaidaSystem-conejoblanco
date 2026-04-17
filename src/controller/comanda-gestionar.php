@@ -55,7 +55,7 @@ if ($c['estado'] == 'pendiente') {
   $accion = '<div>
     <span class="text-danger">Comanda cancelada!</span>
     <div class="mt-2"><span class="text-muted" style="font-size: 0.8rem;">Motivo:</span></div>
-    <div>'.$c['motivo_cancelacion'].'</div>
+    <div>' . $c['motivo_cancelacion'] . '</div>
   </div>';
 }
 
@@ -73,7 +73,7 @@ echo "
     <div class='d-flex pt-1 pb-1'>" . $cocina . $barra . "</div>
   </div>
   <div class='d-flex align-items justify-content-end' style='padding: 0px 10px 10px 10px; background: #ededed;'>
-    <span class='text-muted'>Atiende: ".$c['nombre']."</span>
+    <span class='text-muted'>Atiende: " . $c['nombre'] . "</span>
   </div>
   <div class='p-2 row m-0' style='background: #ffffff;'>
     <div class='col-12 col-md-7 col-xl-8 pt-2'>
@@ -86,7 +86,7 @@ foreach ($batches as $b) {
   $seq = (int) $b['seq'];
 
   // items del batch
-  $stmtI = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid AND batch_id = :bid ORDER BY id ASC");
+  $stmtI = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid AND batch_id = :bid AND tipo != 'extra' ORDER BY id ASC");
   $stmtI->execute([':cid' => $comanda_id, ':bid' => $batchId]);
   $items = $stmtI->fetchAll(PDO::FETCH_ASSOC);
 
@@ -113,8 +113,10 @@ foreach ($batches as $b) {
     $extrasHtml = "";
     $detHtml = "";
 
-    // Separar extras del resto de componentes
-    $extras = array_filter($comps, fn($cp) => $cp['kind'] === 'extra');
+    $stmtE = $cnx->prepare("SELECT * FROM comanda_items WHERE item_id = :id");
+    $stmtE->execute([':id' => $itemId]);
+    $extras = $stmtE->fetchAll(PDO::FETCH_ASSOC);
+
     $otros = array_filter($comps, fn($cp) => $cp['kind'] !== 'extra');
 
     // Agrupar componentes no-extra por grupo_id (para combos)
@@ -172,8 +174,8 @@ foreach ($batches as $b) {
     if ($c['estado'] == 'finalizado' || $c['estado'] == 'cancelado') {
       $eliminar = '';
     } else if ($c['estado'] == 'pendiente') {
-      $completado = $it['destino'] === 'Barra' ? $it['ready_barra'] : ($it['destino'] === 'Ambos' ? $it['ready_cocina']+$it['ready_barra'] : $it['ready_cocina']);
-      $eliminar = $completado > 0 ? 'Completado <i class="bi bi-check2 text-success"></i>': '<div class="p-1 pt-0 pb-0 rounded shadow bg-danger text-light" style="font-size: 0.9rem; padding: 3px 5px; margin-top: 5px; cursor: pointer;" onclick="eliminar_item(\''.$it['destino'].'\','.$c['id'].', '.$it['id'].')">Eliminar</div>';
+      $completado = $it['destino'] === 'Barra' ? $it['ready_barra'] : ($it['destino'] === 'Ambos' ? $it['ready_cocina'] + $it['ready_barra'] : $it['ready_cocina']);
+      $eliminar = $completado > 0 ? 'Completado <i class="bi bi-check2 text-success"></i>' : '<div class="p-1 pt-0 pb-0 rounded shadow bg-danger text-light" style="font-size: 0.9rem; padding: 3px 5px; margin-top: 5px; cursor: pointer;" onclick="eliminar_item(\'' . $it['destino'] . '\',' . $c['id'] . ', ' . $it['id'] . ')">Eliminar</div>';
     }
 
     echo "<div class='p-2 mb-2' style='background:#fff; border:1px solid rgb(0, 0, 0, 0.3); border-radius:10px;'>
@@ -188,7 +190,7 @@ foreach ($batches as $b) {
       </div>
       <div class='d-flex justify-content-between'>
         <div><i class='text-muted' style='font-size: 0.8rem;'>Total = </i> <span class='text-primary fw-bold'>$" . number_format($subtotal, 2) . "</span></div>
-        <div>".$eliminar."</div>
+        <div>" . $eliminar . "</div>
       </div>
     </div>";
   }

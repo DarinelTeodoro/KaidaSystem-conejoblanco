@@ -456,5 +456,5 @@ if (count($detalles_comanda) > 0) {
 }
 
 // Salida del PDF
-$pdf->Output('I', 'El retono - Ventas del ' . $fecha_ventas . '.pdf');
+$pdf->Output('I', 'Conejo Blanco - Ventas del ' . $fecha_ventas . '.pdf');
 ?>

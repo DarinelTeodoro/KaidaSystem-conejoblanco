@@ -5,6 +5,8 @@ include('../model/conexion.php');
 $rol = $_POST['rol'];
 
 $fecha = date('Y-m-d');
+$fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
+$fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 
 $cnx = new Conexion();
 
@@ -14,12 +16,12 @@ $stmt = $cnx->prepare("
         FROM comandas 
         WHERE estado != 'cancelado'
         AND barra != 0
-        AND DATE(created_at) = :fecha
+        AND created_at > :fechaInit
+        AND created_at < :fechaFinish
         ORDER BY id DESC
     ");
 
-$stmt->bindParam(':fecha', $fecha);
-$stmt->execute();
+$stmt->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
 $comandas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if (count($comandas) > 0) {
@@ -35,7 +37,7 @@ if (count($comandas) > 0) {
 
         foreach ($batches as $batch) {
             // Obtener items del batch que sean de barra o ambos
-            $stmtI = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid AND batch_id = :bid AND (destino = 'Barra' OR destino = 'Ambos') AND ready_barra = 1 ORDER BY id ASC");
+            $stmtI = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid AND batch_id = :bid AND (destino = 'Barra' OR destino = 'Ambos') AND ready_barra = 1 AND tipo != 'extra' ORDER BY id ASC");
             $stmtI->execute([':cid' => $comanda['id'], ':bid' => $batch['id']]);
             $items = $stmtI->fetchAll(PDO::FETCH_ASSOC);
 
@@ -52,36 +54,40 @@ if (count($comandas) > 0) {
                 $stmtComp->execute([':iid' => $item['id']]);
                 $componentes = $stmtComp->fetchAll(PDO::FETCH_ASSOC);
 
+                $stmte = $cnx->prepare("SELECT * FROM comanda_items WHERE item_id = :id ORDER BY id ASC");
+                $stmte->execute([':id' => $item['id']]);
+                $itemsExt = $stmte->fetchAll(PDO::FETCH_ASSOC);
+
                 $subtotal = (float) $item['precio'] * (int) $item['qty'];
                 $extras = [];
                 $componentesAgrupados = [];
 
+                foreach ($itemsExt as $ext) {
+                    $totalExtra = (float) $ext['precio'] * (int) $ext['qty'];
+                    $extras[] = [
+                        'nombre' => $ext['nombre'],
+                        'qty' => $ext['qty'],
+                        'precio' => $ext['precio'],
+                        'total' => $totalExtra
+                    ];
+                    $subtotal += $totalExtra;
+                }
+
                 // Procesar componentes
                 foreach ($componentes as $comp) {
-                    if ($comp['kind'] === 'extra') {
-                        $totalExtra = (float) $comp['precio'] * (int) $comp['qty'];
-                        $extras[] = [
-                            'nombre' => $comp['nombre'],
-                            'qty' => $comp['qty'],
-                            'precio' => $comp['precio'],
-                            'total' => $totalExtra
-                        ];
-                        $subtotal += $totalExtra;
-                    } else {
-                        $grupoId = $comp['grupo_id'] ?? 0;
-                        $grupoNombre = $comp['grupo_nombre'] ?? '';
+                    $grupoId = $comp['grupo_id'] ?? 0;
+                    $grupoNombre = $comp['grupo_nombre'] ?? '';
 
-                        if (!isset($componentesAgrupados[$grupoId])) {
-                            $componentesAgrupados[$grupoId] = [
-                                'nombre' => $grupoNombre,
-                                'items' => []
-                            ];
-                        }
-                        $componentesAgrupados[$grupoId]['items'][] = [
-                            'nombre' => $comp['nombre'],
-                            'kind' => $comp['kind']
+                    if (!isset($componentesAgrupados[$grupoId])) {
+                        $componentesAgrupados[$grupoId] = [
+                            'nombre' => $grupoNombre,
+                            'items' => []
                         ];
                     }
+                    $componentesAgrupados[$grupoId]['items'][] = [
+                        'nombre' => $comp['nombre'],
+                        'kind' => $comp['kind']
+                    ];
                 }
 
                 $itemsData[] = [
@@ -120,7 +126,8 @@ if (count($comandas) > 0) {
 
             // Formatear la salida HTML con una estructura clara
             ?>
-            <div style="border: 1px solid #000; margin-bottom: 20px; padding: 15px 15px 5px; border-radius: 8px; background: #f9f9f9;">
+            <div
+                style="border: 1px solid #000; margin-bottom: 20px; padding: 15px 15px 5px; border-radius: 8px; background: #f9f9f9;">
                 <!-- Encabezado de la comanda -->
                 <div
                     style="display: flex; justify-content: space-between; align-items: center; background: #e0e0e0; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 0.9rem">
@@ -129,7 +136,8 @@ if (count($comandas) > 0) {
                 </div>
 
                 <!-- Información del cliente/mesa -->
-                <div style="margin-bottom: 10px; padding: 5px 10px; background: #fff; border-radius: 5px; font-size: 0.85rem; box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
+                <div
+                    style="margin-bottom: 10px; padding: 5px 10px; background: #fff; border-radius: 5px; font-size: 0.85rem; box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
                     <?php if ($comanda['tipo'] === 'mesa'): ?>
                         <span>Mesa</span> <?php echo $comanda['mesa']; ?>
                     <?php else: ?>
@@ -139,9 +147,13 @@ if (count($comandas) > 0) {
 
                 <!-- Items de la comanda -->
                 <?php foreach ($batchesData as $batch): ?>
-                    <div class="d-flex align-items-center justify-content-between" style="font-size: 0.8rem; margin-bottom: 10px;"><span><?php echo $batch['seq'] == 1 ? 'Creacion de comanda' : 'Agregado despues'; ?></span><i class="text-muted"><?php echo date('H:i:s', strtotime($batch['created_at'])); ?></i></div>
+                    <div class="d-flex align-items-center justify-content-between" style="font-size: 0.8rem; margin-bottom: 10px;">
+                        <span><?php echo $batch['seq'] == 1 ? 'Creacion de comanda' : 'Agregado despues'; ?></span><i
+                            class="text-muted"><?php echo date('H:i:s', strtotime($batch['created_at'])); ?></i>
+                    </div>
                     <?php foreach ($batch['items'] as $item): ?>
-                        <div style="margin-bottom: 10px; padding: 5px 10px; background: #fff; border-left: 4px solid #ff9800; box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
+                        <div
+                            style="margin-bottom: 10px; padding: 5px 10px; background: #fff; border-left: 4px solid #ff9800; box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;">
                             <div style="display: flex; justify-content: space-between;">
                                 <div>
                                     <b class="text-uppercase" style="font-size: 0.8rem;"><?php echo $item['nombre']; ?></b>

@@ -189,15 +189,6 @@ function cargarTickets() {
                 const tiempoComanda = fechaComanda.getTime() / 100;
                 const diferencia = ahora - tiempoComanda;
 
-                /*console.log(`Comanda ${comanda.id}:`, {
-                    fecha: comanda.fecha,
-                    tiempoComanda: tiempoComanda,
-                    tiempoMinimo: tiempoMinimo,
-                    ahora: ahora,
-                    diferencia: diferencia,
-                    mostrar: diferencia > tiempoMinimo
-                });*/
-
                 // Incluir comandas que tengan más de 40 segundos
                 return diferencia > tiempoMinimo;
             });

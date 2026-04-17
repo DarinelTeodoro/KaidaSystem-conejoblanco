@@ -5,6 +5,8 @@ include('../model/conexion.php');
 $rol = $_POST['rol'];
 
 $fecha = date('Y-m-d');
+$fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
+$fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 
 $cnx = new Conexion();
 
@@ -14,11 +16,12 @@ $stmt = $cnx->prepare("
         FROM comandas 
         WHERE estado != 'cancelado'
         AND cocina != 0
-        AND DATE(created_at) = :fecha
+        AND created_at > :fechaInit
+        AND created_at < :fechaFinish
         ORDER BY id DESC
     ");
 
-$stmt->bindParam(':fecha', $fecha);
+$stmt->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
 $stmt->execute();
 $comandas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -52,22 +55,27 @@ if (count($comandas) > 0) {
                 $stmtComp->execute([':iid' => $item['id']]);
                 $componentes = $stmtComp->fetchAll(PDO::FETCH_ASSOC);
 
+                $stmte = $cnx->prepare("SELECT * FROM comanda_items WHERE item_id = :id ORDER BY id ASC");
+                $stmte->execute([':id' => $item['id']]);
+                $itemsExt = $stmte->fetchAll(PDO::FETCH_ASSOC);
+
                 $subtotal = (float) $item['precio'] * (int) $item['qty'];
                 $extras = [];
                 $componentesAgrupados = [];
 
-                // Procesar componentes
-                foreach ($componentes as $comp) {
-                    if ($comp['kind'] === 'extra') {
-                        $totalExtra = (float) $comp['precio'] * (int) $comp['qty'];
+                foreach ($stmte as $ext) {
+                    $totalExtra = (float) $ext['precio'] * (int) $ext['qty'];
                         $extras[] = [
-                            'nombre' => $comp['nombre'],
-                            'qty' => $comp['qty'],
-                            'precio' => $comp['precio'],
+                            'nombre' => $ext['nombre'],
+                            'qty' => $ext['qty'],
+                            'precio' => $ext['precio'],
                             'total' => $totalExtra
                         ];
                         $subtotal += $totalExtra;
-                    } else {
+                }
+
+                // Procesar componentes
+                foreach ($componentes as $comp) {
                         $grupoId = $comp['grupo_id'] ?? 0;
                         $grupoNombre = $comp['grupo_nombre'] ?? '';
 
@@ -81,7 +89,6 @@ if (count($comandas) > 0) {
                             'nombre' => $comp['nombre'],
                             'kind' => $comp['kind']
                         ];
-                    }
                 }
 
                 $itemsData[] = [

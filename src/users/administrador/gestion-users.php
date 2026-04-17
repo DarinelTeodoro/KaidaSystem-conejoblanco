@@ -70,7 +70,7 @@ include('../../model/querys.php');
             </div>
             <div class="d-grid p-2 ps-4 pe-4">
                 <label for="password_newuser">Contraseña</label>
-                <input type="text" name="password_newuser" id="password_newuser" required>
+                <input type="password" name="password_newuser" id="password_newuser" required>
             </div>
             <div class="d-grid p-2 ps-4 pe-4">
                 <label for="name_newuser">Nombre del Usuario</label>

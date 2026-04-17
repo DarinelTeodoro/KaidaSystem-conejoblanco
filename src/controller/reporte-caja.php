@@ -1,5 +1,6 @@
 <?php
 session_start();
+date_default_timezone_set('America/Mexico_City');
 include('../model/conexion.php');
 
 // Si hay error, devolvemos JSON
@@ -9,7 +10,10 @@ if (!isset($_POST['dia']) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $_POST['dia'])
     exit;
 }
 
-$fecha = $_POST['dia'];
+$dia = $_POST['dia'];
+
+$fecha_inicial = date('Y-m-d 06:00:00', strtotime($dia));
+$fecha_final = date('Y-m-d 06:00:00', strtotime($dia . ' +1 day'));
 $cnx = new Conexion();
 
 try {
@@ -17,10 +21,10 @@ try {
         SELECT c.*, u.name
         FROM caja c
         LEFT JOIN usuarios u ON c.usuario = u.username
-        WHERE DATE(c.fecha) = :fecha
+        WHERE c.fecha > :init AND c.fecha < :finish
         ORDER BY c.fecha ASC
     ");
-    $cortes_caja->execute([':fecha' => $fecha]);
+    $cortes_caja->execute([':init' => $fecha_inicial, ':finish' => $fecha_final]);
     $data_cortes = $cortes_caja->fetchAll(PDO::FETCH_ASSOC);
 
     // Obtener todos los pagos de la fecha especificada
@@ -29,10 +33,10 @@ try {
         FROM purchases p
         LEFT JOIN comandas c ON p.comanda_id = c.id
         LEFT JOIN usuarios u ON c.user_id = u.username
-        WHERE DATE(p.fecha_pago) = :fecha
+        WHERE p.fecha_pago > :init AND p.fecha_pago < :finish
         ORDER BY c.id ASC
     ");
-    $stmt->execute([':fecha' => $fecha]);
+    $stmt->execute([':init' => $fecha_inicial, ':finish' => $fecha_final]);
     $detalles_comanda = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     function movimientos($cnx, $fecha_init, $fecha_cut)
@@ -49,6 +53,18 @@ try {
         } else {
             return false;
         }
+    }
+
+    function gastos_extras($cnx, $fechaInit, $fechaFinish)
+    {
+        $query = $cnx->prepare("SELECT * FROM gastos_extras WHERE fecha > :fechaInit AND fecha < :fechaFinish");
+        $query->bindParam(':fechaInit', $fechaInit);
+        $query->bindParam(':fechaFinish', $fechaFinish);
+        $query->execute();
+
+        $data = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        return !empty($data) ? $data : false;
     }
     ?>
 
@@ -76,7 +92,7 @@ try {
 
     <div>
         <span class="text-muted">Dia Seleccionado: </span><span
-            class="fw-bold text-muted"><?= date('d-m-Y', strtotime($fecha)) ?></span>
+            class="fw-bold text-muted"><?= date('d-m-Y', strtotime($dia)) ?></span>
     </div>
 
     <div>
@@ -213,6 +229,7 @@ try {
                                 $residuo = $resultado <= 0 ? $resultado * -1 : $resultado;
 
                                 $movimientos = movimientos($cnx, $corte['fecha_inicial'], $corte['fecha']);
+                                $gastos = gastos_extras($cnx, $corte['fecha_inicial'], $corte['fecha']);
                                 ?>
                                 <div class="mt-1 mb-3 border border-dark">
                                     <div style="display: grid; grid-template-columns: 1fr 1fr;">
@@ -235,11 +252,16 @@ try {
                                                     <th class="text-center">Fecha</th>
                                                     <th class="text-center">Recibido (+)</th>
                                                     <th class="text-center">Cambio (-)</th>
-                                                    <th class="text-center">Ingreso Neto</th>
+                                                    <th class="text-center">Ingreso/Concepto</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <?php
+                                                if (!$movimientos & !$gastos) {
+                                                    echo '<tr>
+                                                        <td colspan="5" class="text-center">No hay movimientos</td>
+                                                    </td>';
+                                                }
                                                 if ($movimientos) {
                                                     foreach ($movimientos as $movimiento) {
                                                         ?>
@@ -248,14 +270,28 @@ try {
                                                             <td class="text-center"><?= $movimiento['fecha'] ?></td>
                                                             <td class="text-center">$<?= number_format($movimiento['recibido'], 2) ?></td>
                                                             <td class="text-center">$<?= number_format($movimiento['cambio'], 2) ?></td>
-                                                            <td class="text-center">$<?= number_format(($movimiento['recibido'] - $movimiento['cambio']), 2) ?></td>
+                                                            <td class="text-center">
+                                                                $<?= number_format(($movimiento['recibido'] - $movimiento['cambio']), 2) ?>
+                                                            </td>
                                                         </tr>
                                                         <?php
                                                     }
-                                                } else {
-                                                    echo '<tr>
-                                                        <td colspan="5" class="text-center">No hay movimientos</td>
-                                                    </td>';
+                                                }
+
+                                                if ($gastos) {
+                                                    foreach ($gastos as $gasto) {
+                                                        ?>
+                                                        <tr>
+                                                            <td class="text-center">Gasto</td>
+                                                            <td class="text-center"><?= $gasto['fecha'] ?></td>
+                                                            <td class="text-center">$<?= number_format(0, 2) ?></td>
+                                                            <td class="text-center">$<?= number_format($gasto['cantidad'], 2) ?></td>
+                                                            <td class="text-center">
+                                                                <?= $gasto['concepto'] ?>
+                                                            </td>
+                                                        </tr>
+                                                        <?php
+                                                    }
                                                 }
                                                 ?>
                                             </tbody>
