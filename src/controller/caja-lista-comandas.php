@@ -3,8 +3,25 @@ session_start();
 $mesero = $_SESSION['data-useractive'];
 include('../model/querys.php');
 
-$estado = $_POST['estado'] ?? null;
+function list_descuentos($comanda_id)
+{
+    $cnx = new Conexion();
+    $list_descuentos = $cnx->prepare("SELECT * FROM descuentos WHERE id_comanda = :id ORDER BY id ASC");
+    $list_descuentos->execute([':id' => $comanda_id]);
 
+    return $list_descuentos->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function suma($comanda_id)
+{
+    $cnx = new Conexion();
+    $sum_descuentos = $cnx->prepare("SELECT SUM(descuento) as descuento FROM descuentos WHERE id_comanda = :id");
+    $sum_descuentos->execute([':id' => $comanda_id]);
+
+    return $sum_descuentos->fetch(PDO::FETCH_ASSOC);
+}
+
+$estado = $_POST['estado'] ?? null;
 $comandas = data_comandas_caja($estado);
 
 if (!$comandas) {
@@ -15,6 +32,17 @@ if (!$comandas) {
 }
 
 foreach ($comandas as $c) {
+    $descuentos = list_descuentos($c['id']);
+
+    if (!$descuentos) {
+        $hay_descuentos = false;
+        $cantidad_descuento = 0;
+    } else {
+        $hay_descuentos = true;
+        $data_descuento = suma($c['id']);
+        $cantidad_descuento = floatval($data_descuento['descuento']);
+    }
+
     $mesero = consultar_usuario($c['user_id']);
     $detalle = detalle_comanda($c['id']);
     $total = 0;
@@ -64,7 +92,7 @@ foreach ($comandas as $c) {
                 </div>
             </div>
             <div class='text-end'>
-                <div class='fw-bold text-primary'>$" . number_format($total, 2) . "</div>
+                <div>".($hay_descuentos == true ? "<span class='text-muted text-decoration-line-through'>$" . number_format($total, 2) . "</span> " : "")."<span class='fw-bold text-primary'>$" . number_format($total - $cantidad_descuento, 2) . "</span></div>
                 <div class='text-muted' style='font-size:.8rem;'>{$c['created_at']}</div>
                 <div class='text-muted' style='font-size:.8rem;'>{$mesero['name']}</div>
             </div>

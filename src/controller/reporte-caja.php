@@ -27,13 +27,23 @@ try {
     $cortes_caja->execute([':init' => $fecha_inicial, ':finish' => $fecha_final]);
     $data_cortes = $cortes_caja->fetchAll(PDO::FETCH_ASSOC);
 
+    $movimientos = $cnx->prepare("
+        SELECT *
+        FROM gastos_extras
+        WHERE fecha > :init AND fecha < :finish
+        ORDER BY fecha ASC
+    ");
+    $movimientos->execute([':init' => $fecha_inicial, ':finish' => $fecha_final]);
+    $data_mov = $movimientos->fetchAll(PDO::FETCH_ASSOC);
+
     // Obtener todos los pagos de la fecha especificada
     $stmt = $cnx->prepare("
-        SELECT c.*, u.name, p.total_comanda, p.id_pago
-        FROM purchases p
-        LEFT JOIN comandas c ON p.comanda_id = c.id
+        SELECT c.*, u.name, v.total_comanda, v.id_pago
+        FROM ventas v
+        LEFT JOIN comandas c ON v.id_comanda = c.id
         LEFT JOIN usuarios u ON c.user_id = u.username
-        WHERE p.fecha_pago > :init AND p.fecha_pago < :finish
+        WHERE v.fecha > :init AND v.fecha < :finish AND tipo_pago = 'efectivo'
+        GROUP BY id_comanda
         ORDER BY c.id ASC
     ");
     $stmt->execute([':init' => $fecha_inicial, ':finish' => $fecha_final]);
@@ -42,9 +52,7 @@ try {
     function movimientos($cnx, $fecha_init, $fecha_cut)
     {
         // Obtener todos los pagos de la fecha especificada
-        $stmt = $cnx->prepare("
-        SELECT * FROM ventas WHERE tipo_pago = 'efectivo' AND fecha > :fecha_init AND fecha < :fecha_cut
-    ");
+        $stmt = $cnx->prepare("SELECT * FROM view_movimientos WHERE fecha > :fecha_init AND fecha < :fecha_cut ORDER BY fecha ASC");
         $stmt->execute([':fecha_init' => $fecha_init, ':fecha_cut' => $fecha_cut]);
         $count = $stmt->rowCount();
 
@@ -53,18 +61,6 @@ try {
         } else {
             return false;
         }
-    }
-
-    function gastos_extras($cnx, $fechaInit, $fechaFinish)
-    {
-        $query = $cnx->prepare("SELECT * FROM gastos_extras WHERE fecha > :fechaInit AND fecha < :fechaFinish");
-        $query->bindParam(':fechaInit', $fechaInit);
-        $query->bindParam(':fechaFinish', $fechaFinish);
-        $query->execute();
-
-        $data = $query->fetchAll(PDO::FETCH_ASSOC);
-
-        return !empty($data) ? $data : false;
     }
     ?>
 
@@ -160,6 +156,35 @@ try {
                                 ?>
                             </tbody>
                         </table>
+
+                        <table class="table table-sm table-modern table-hover align-middle table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Cantidad</th>
+                                    <th>Usuario</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 0.85rem;">
+                                <?php
+                                if (count($data_mov) > 0) {
+                                    foreach ($data_mov as $mov) {
+                                        echo '
+                                        <tr>
+                                            <td>' . $mov['concepto'] . '</td>
+                                            <td>' . ($mov['tipo'] == 'gasto' ? '<span class="text-danger fw-bold">- $'.number_format($mov['cantidad'], 2).'</span>' : '<span class="text-success fw-bold">+ $'.number_format($mov['cantidad'], 2).'</span>') . '</td>
+                                            <td>' . $mov['usuario'] . '</td>
+                                            <td>' . $mov['fecha'] . '</td>
+                                        </tr>
+                                        ';
+                                    }
+                                } else {
+                                    echo '<tr><td colspan="4" class="text-center">No hay Gastos o Ingresos Extras</td></tr>';
+                                }
+                                ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -197,7 +222,7 @@ try {
                                             <td class="text-center">$<?= number_format($corte['inicial'], 2) ?></td>
                                             <td class="text-center">$<?= number_format($corte['corte'], 2) ?></td>
                                             <td class="text-center">$<?= number_format($corte['cantidad_real'], 2) ?></td>
-                                            <td class="text-center <?= $resultado <= 0 ? 'text-success' : 'text-danger' ?>">
+                                            <td class="text-center fw-bold <?= $resultado <= 0 ? 'text-success' : 'text-danger' ?>">
                                                 $<?= number_format($residuo, 2) ?>
                                             </td>
                                         </tr>
@@ -229,92 +254,94 @@ try {
                                 $residuo = $resultado <= 0 ? $resultado * -1 : $resultado;
 
                                 $movimientos = movimientos($cnx, $corte['fecha_inicial'], $corte['fecha']);
-                                $gastos = gastos_extras($cnx, $corte['fecha_inicial'], $corte['fecha']);
-                                ?>
-                                <div class="mt-1 mb-3 border border-dark">
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr;">
-                                        <div class="bg-dark p-1 text-center text-light"><?= $corte['fecha'] ?></div>
-                                        <div class="bg-dark p-1 text-center text-light"><?= $corte['name'] ?></div>
-                                    </div>
-                                    <div class="text-center p-1">
-                                        <div>Monto Inicial</div>
-                                        <div>$<?= number_format($corte['inicial'], 2) ?></div>
-                                    </div>
-                                    <div class="p-1 text-center"
-                                        style="background: #fef9fd; border-top: 1px solid #000000; border-bottom: 1px solid #000000;">
-                                        Movimientos
-                                    </div>
-                                    <div class="p-1">
-                                        <table class="table table-sm table-modern table-hover align-middle mb-0">
-                                            <thead>
-                                                <tr>
-                                                    <th class="text-center">Folio</th>
-                                                    <th class="text-center">Fecha</th>
-                                                    <th class="text-center">Recibido (+)</th>
-                                                    <th class="text-center">Cambio (-)</th>
-                                                    <th class="text-center">Ingreso/Concepto</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php
-                                                if (!$movimientos & !$gastos) {
-                                                    echo '<tr>
-                                                        <td colspan="5" class="text-center">No hay movimientos</td>
-                                                    </td>';
-                                                }
-                                                if ($movimientos) {
-                                                    foreach ($movimientos as $movimiento) {
-                                                        ?>
-                                                        <tr>
-                                                            <td class="text-center"><?= $movimiento['id_comanda'] ?></td>
-                                                            <td class="text-center"><?= $movimiento['fecha'] ?></td>
-                                                            <td class="text-center">$<?= number_format($movimiento['recibido'], 2) ?></td>
-                                                            <td class="text-center">$<?= number_format($movimiento['cambio'], 2) ?></td>
-                                                            <td class="text-center">
-                                                                $<?= number_format(($movimiento['recibido'] - $movimiento['cambio']), 2) ?>
-                                                            </td>
-                                                        </tr>
-                                                        <?php
-                                                    }
-                                                }
 
-                                                if ($gastos) {
-                                                    foreach ($gastos as $gasto) {
-                                                        ?>
-                                                        <tr>
-                                                            <td class="text-center">Gasto</td>
-                                                            <td class="text-center"><?= $gasto['fecha'] ?></td>
-                                                            <td class="text-center">$<?= number_format(0, 2) ?></td>
-                                                            <td class="text-center">$<?= number_format($gasto['cantidad'], 2) ?></td>
-                                                            <td class="text-center">
-                                                                <?= $gasto['concepto'] ?>
-                                                            </td>
-                                                        </tr>
-                                                        <?php
+                                if ($corte['tipo'] == 1) {
+                                    ?>
+                                    <div class="border border-dark rounded-bottom bg-warning bg-opacity-25 shadow mb-2">
+                                        <div class="p-1 bg-dark text-center"><span class="text-warning fw-bold">Nuevo Monto
+                                                Inicial</span></div>
+                                        <div class="d-flex align-items-center justify-content-between p-2">
+                                            <div><span class="fw-bold"><?= $corte['fecha'] ?></span></div>
+                                            <div><span class="fw-bold"><?= $corte['name'] ?></span></div>
+                                        </div>
+                                        <div class="p-1 text-center border-top border-dark"><span
+                                                class="fs-5 text-success fw-bold">$<?= number_format($corte['inicial'], 2) ?></span>
+                                        </div>
+                                    </div>
+                                    <?php
+                                } else {
+                                    ?>
+                                    <div class="mt-1 mb-3">
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr;">
+                                            <div class="bg-dark p-1 text-center text-light"><?= $corte['fecha'] ?></div>
+                                            <div class="bg-dark p-1 text-center text-light"><?= $corte['name'] ?></div>
+                                        </div>
+
+                                        <div class="table-responsive">
+                                            <table
+                                                class="table table-sm table-bordered border-primary border-opacity-50 table-modern align-middle mb-0">
+                                                <tr>
+                                                    <th class="text-center">Inicial</th>
+                                                    <td class="text-center">$<?= number_format($corte['inicial'], 2) ?></td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="m-3 border border-dark opacity-border-50 table-responsive">
+                                            <table class="table table-sm table-modern table-hover align-middle mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Folio/Concepto</th>
+                                                        <th class="text-center">Fecha & Hora</th>
+                                                        <th class="text-center">Movimiento</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody style="font-size: 0.85rem;">
+                                                    <?php
+                                                    if (!$movimientos) {
+                                                        echo '<tr>
+                                                                <td colspan="5" class="text-center">No hay movimientos</td>
+                                                            </td>';
+                                                    } else if ($movimientos) {
+                                                        foreach ($movimientos as $movimiento) {
+                                                            ?>
+                                                            <tr>
+                                                                <td><?= $movimiento['motivo'] ?></td>
+                                                                <td class="text-center"><?= $movimiento['fecha'] ?></td>
+                                                                <td class="text-center fw-bold <?= $movimiento['tipo'] == 'gasto' ? 'text-danger' : 'text-success' ?>">
+                                                                    <?= $movimiento['tipo'] == 'gasto' ? '-' : '+' ?>
+                                                                    $<?= number_format($movimiento['monto'], 2) ?>
+                                                                </td>
+                                                            </tr>
+                                                            <?php
+                                                        }
                                                     }
-                                                }
-                                                ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; background: #ecf5fd;">
-                                        <div class="text-center p-1">
-                                            <div>Resultado Corte</div>
-                                            <div>$<?= number_format($corte['corte'], 2) ?></div>
+                                                    ?>
+                                                </tbody>
+                                            </table>
                                         </div>
-                                        <div class="text-center p-1">
-                                            <div>Cantidad Real</div>
-                                            <div>$<?= number_format($corte['cantidad_real'], 2) ?></div>
+
+                                        <div class="table-responsive">
+                                            <table
+                                                class="table table-sm table-bordered border-primary border-opacity-50 table-modern align-middle mb-0">
+                                                <tr>
+                                                    <th class="text-center">Corte</th>
+                                                    <td class="text-center">$<?= number_format($corte['corte'], 2) ?></td>
+                                                    <th class="text-center">Real</th>
+                                                    <td class="text-center">$<?= number_format($corte['cantidad_real'], 2) ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="text-center" colspan="2"><?= $resultado <= 0 ? 'Restante' : 'Faltante' ?></th>
+                                                    <td class="text-center" colspan="2">
+                                                        <span class="fw-bold <?= $resultado <= 0 ? 'text-success' : 'text-danger' ?>">$<?= number_format($residuo, 2) ?>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </table>
                                         </div>
                                     </div>
-                                    <div class="p-1">
-                                        <div class="text-center">Restante / Faltante</div>
-                                        <div class="text-center"><span
-                                                class="<?= $resultado <= 0 ? 'text-success' : 'text-danger' ?>">$<?= number_format($residuo, 2) ?></span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <?php
+                                    <?php
+                                }
                             }
                         } else {
                             echo '<div class="text-center mb-2">No hay cortes realizados</div>';

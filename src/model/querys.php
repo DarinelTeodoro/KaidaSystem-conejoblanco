@@ -298,7 +298,15 @@ function n_mesas()
 function data_comandas($estado = null, $mesero)
 {
     $conexion = new Conexion();
-    $fecha = date('Y-m-d');
+    $hora = date('H');
+    $dia = date('Y-m-d');
+    
+    if ($hora < 6) {
+        $fecha = date('Y-m-d', strtotime($dia . ' -1 day'));
+    } else {
+        $fecha = date('Y-m-d');
+    }
+    
     $fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
     $fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 
@@ -383,7 +391,15 @@ function detalle_comanda($comanda_id)
 function data_comandas_caja($estado = null)
 {
     $conexion = new Conexion();
-    $fecha = date('Y-m-d');
+    $hora = date('H');
+    $dia = date('Y-m-d');
+    
+    if ($hora < 6) {
+        $fecha = date('Y-m-d', strtotime($dia . ' -1 day'));
+    } else {
+        $fecha = date('Y-m-d');
+    }
+
     $fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
     $fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 
@@ -429,7 +445,15 @@ function data_comandas_caja($estado = null)
 function gastos($user)
 {
     $conexion = new Conexion();
-    $fecha = date('Y-m-d');
+    $hora = date('H');
+    $dia = date('Y-m-d');
+    
+    if ($hora < 6) {
+        $fecha = date('Y-m-d', strtotime($dia . ' -1 day'));
+    } else {
+        $fecha = date('Y-m-d');
+    }
+    
     $fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
     $fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 

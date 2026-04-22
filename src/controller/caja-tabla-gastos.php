@@ -9,6 +9,7 @@ include('../model/querys.php');
             <th>Cantidad</th>
             <th>Fecha</th>
             <th>Concepto</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -17,16 +18,18 @@ include('../model/querys.php');
 
         if ($gastos) {
             foreach ($gastos as $gasto) {
+                $movimiento = $gasto['tipo'] == 'gasto' ? ($gasto['cantidad'] * -1) : $gasto['cantidad'];
                 ?>
                 <tr>
-                    <td>$<?= number_format($gasto['cantidad'], 2) ?></td>
+                    <td class="fw-bold <?= $gasto['tipo'] == 'gasto' ? 'text-danger' : 'text-success' ?>">$<?= number_format($movimiento, 2) ?></td>
                     <td><?= $gasto['fecha'] ?></td>
                     <td><?= $gasto['concepto'] ?></td>
+                    <td class="text-center"><?= $gasto['confirmado'] == 0 ? '<button class="btn btn-danger" onclick="eliminar_movimiento('.$gasto['id'].')"><i class="bi bi-trash3-fill"></i></button>' : '' ?></td>
                 </tr>
                 <?php
             }
         } else {
-            echo '<tr><td colspan="3" class="text-center">No hay gastos extras registrados</td></tr>';
+            echo '<tr><td colspan="4" class="text-center">No hay movimientos extras registrados</td></tr>';
         }
         ?>
     </tbody>

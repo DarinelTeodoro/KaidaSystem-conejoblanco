@@ -14,6 +14,22 @@ $fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
 $fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 $cnx = new Conexion();
 
+function list_descuentos($cnx, $comanda_id)
+{
+    $list_descuentos = $cnx->prepare("SELECT * FROM descuentos WHERE id_comanda = :id ORDER BY id ASC");
+    $list_descuentos->execute([':id' => $comanda_id]);
+
+    return $list_descuentos->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function suma($cnx, $comanda_id)
+{
+    $sum_descuentos = $cnx->prepare("SELECT SUM(descuento) as descuento FROM descuentos WHERE id_comanda = :id");
+    $sum_descuentos->execute([':id' => $comanda_id]);
+
+    return $sum_descuentos->fetch(PDO::FETCH_ASSOC);
+}
+
 try {
     $stmtTotal_comandas = $cnx->prepare("
         SELECT SUM(total_comanda) as total, COUNT(id_pago) as n_pagos
@@ -100,42 +116,26 @@ try {
         $cnx = new Conexion();
         $totalComanda = 0;
 
-        // Obtener todos los batches de la comanda
-        $stmtB = $cnx->prepare("SELECT * FROM comanda_batches WHERE comanda_id = :id ORDER BY seq ASC");
-        $stmtB->execute([':id' => $comanda_id]);
-        $batches = $stmtB->fetchAll(PDO::FETCH_ASSOC);
+        // Obtener items del batch
+        $stmtI = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid");
+        $stmtI->execute([':cid' => $comanda_id]);
+        $items = $stmtI->fetchAll(PDO::FETCH_ASSOC);
 
-        foreach ($batches as $b) {
-            $batchId = (int) $b['id'];
+        $descuentos = list_descuentos($cnx, $comanda_id);
 
-            // Obtener items del batch
-            $stmtI = $cnx->prepare("SELECT * FROM comanda_items WHERE comanda_id = :cid AND batch_id = :bid ORDER BY id ASC");
-            $stmtI->execute([':cid' => $comanda_id, ':bid' => $batchId]);
-            $items = $stmtI->fetchAll(PDO::FETCH_ASSOC);
-
-            foreach ($items as $it) {
-                $itemId = (int) $it['id'];
-
-                // Calcular subtotal base del item
-                $subtotal = ((float) $it['precio']) * ((int) $it['qty']);
-
-                // Obtener componentes del item
-                $stmtComp = $cnx->prepare("SELECT * FROM comanda_item_componentes WHERE item_id = :iid ORDER BY id ASC");
-                $stmtComp->execute([':iid' => $itemId]);
-                $comps = $stmtComp->fetchAll(PDO::FETCH_ASSOC);
-
-                // Sumar el precio de los extras al subtotal
-                foreach ($comps as $cp) {
-                    if ($cp['kind'] === 'extra') {
-                        $subtotal += ((float) $cp['precio']) * ((int) $cp['qty']);
-                    }
-                }
-
-                $totalComanda += $subtotal;
-            }
+        if (!$descuentos) {
+            $cantidad_descuento = 0;
+        } else {
+            $data_descuento = suma($cnx, $comanda_id);
+            $cantidad_descuento = floatval($data_descuento['descuento']);
         }
 
-        return $totalComanda;
+        foreach ($items as $it) {
+            $subtotal = ((float) $it['precio']) * ((int) $it['qty']);
+            $totalComanda += $subtotal;
+        }
+
+        return $totalComanda - $cantidad_descuento;
     }
     ?>
 

@@ -138,4 +138,4 @@ include('../../model/querys.php');
     </div>
 </div>
 
-<script src="gestion-users-script.js"></script>
+<script src="gestion-users-script.js?v=2"></script>

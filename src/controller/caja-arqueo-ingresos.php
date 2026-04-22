@@ -18,13 +18,19 @@ $ventas->bindParam(":fecha_cut", $fecha);
 $ventas->execute();
 $data_ventas = $ventas->fetch(PDO::FETCH_ASSOC);
 
-$gastos = $conexion->prepare("SELECT SUM(cantidad) AS cantidad FROM gastos_extras WHERE fecha > :fechaInit AND fecha < :fechaFinish");
+$gastos = $conexion->prepare("SELECT SUM(cantidad) AS cantidad FROM gastos_extras WHERE fecha > :fechaInit AND fecha < :fechaFinish AND tipo = 'gasto'");
 $gastos->bindParam(":fechaInit", $data_last['fecha']);
 $gastos->bindParam(":fechaFinish", $fecha);
 $gastos->execute();
 $data_gastos = $gastos->fetch(PDO::FETCH_ASSOC);
 
-$real = floatval($data_last['corte']) + (floatval($data_ventas['recibido']) - floatval($data_ventas['cambio'])) - $data_gastos['cantidad'];
+$ingresos = $conexion->prepare("SELECT SUM(cantidad) AS cantidad FROM gastos_extras WHERE fecha > :fechaInit AND fecha < :fechaFinish AND tipo = 'ingreso'");
+$ingresos->bindParam(":fechaInit", $data_last['fecha']);
+$ingresos->bindParam(":fechaFinish", $fecha);
+$ingresos->execute();
+$data_ingresos = $ingresos->fetch(PDO::FETCH_ASSOC);
+
+$real = floatval($data_last['corte']) + (floatval($data_ventas['recibido']) - floatval($data_ventas['cambio'])) - $data_gastos['cantidad'] + $data_ingresos['cantidad'];
 
 $init = $conexion->prepare('INSERT INTO caja(tipo, inicial, corte, usuario, cantidad_real, fecha_inicial, fecha) VALUES (2, :inicial, :corte, :usuario, :real, :fecha_init, :fecha)');
 $init->bindParam(':inicial', $data_last['corte']);
@@ -35,18 +41,22 @@ $init->bindParam(':fecha_init', $data_last['fecha']);
 $init->bindParam(':fecha', $fecha);
 $init->execute();
 
+
 $residuo = floatval($real) - floatval($cantidad);
 if ($residuo > 0) {
-    $resultado = 'Faltante: $'.number_format($residuo, 2);
+    $resultado = 'Faltante: $' . number_format($residuo, 2);
 } else if ($residuo < 0) {
-    $resultado = 'Restante: $'.number_format($residuo * -1, 2);
+    $resultado = 'Restante: $' . number_format($residuo * -1, 2);
 } else if ($residuo == 0) {
     $resultado = 'Balance en Orden';
 }
 
 if ($init) {
+    $update = $conexion->prepare('UPDATE gastos_extras SET confirmado = 1 WHERE confirmado = 0');
+    $update->execute();
+
     $response['status'] = 'EXITO';
-    $response['message'] = 'Corte Realizado: '. $resultado;
+    $response['message'] = 'Corte Realizado: ' . $resultado;
 } else {
     $response['status'] = 'ERROR';
     $response['message'] = 'No se pudo enviar la información. Intente nuevamente';

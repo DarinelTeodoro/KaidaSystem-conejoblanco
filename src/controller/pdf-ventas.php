@@ -2,7 +2,10 @@
 include('../model/conexion.php');
 date_default_timezone_set('America/Mexico_City');
 require_once('../../fpdf/fpdf.php');
+
 $fecha_ventas = date('d-m-Y', strtotime($_GET['day']));
+$fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha_ventas));
+$fecha_final = date('Y-m-d 06:00:00', strtotime($fecha_ventas . ' +1 day'));
 
 $cnx = new Conexion();
 $stmtTotal_comandas = $cnx->prepare("
@@ -54,9 +57,9 @@ $stmtTotal_ventas = $cnx->prepare("
         COUNT(CASE WHEN tipo_pago NOT IN ('efectivo', 'tarjeta') THEN 1 END) as count_otros
 
     FROM ventas
-    WHERE DATE(fecha) = :fecha
+    WHERE fecha > :fechaInit AND fecha < :fechaFinish
 ");
-$stmtTotal_ventas->execute([':fecha' => $_GET['day']]);
+$stmtTotal_ventas->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
 $totales_ventas = $stmtTotal_ventas->fetch(PDO::FETCH_ASSOC);
 
 
@@ -66,21 +69,21 @@ $stmt = $cnx->prepare("
         FROM purchases p
         LEFT JOIN comandas c ON p.comanda_id = c.id
         LEFT JOIN usuarios u ON c.user_id = u.username
-        WHERE DATE(p.fecha_pago) = :fecha
+        WHERE p.fecha_pago > :fechaInit AND p.fecha_pago < :fechaFinish
         ORDER BY c.id ASC
     ");
-$stmt->execute([':fecha' => $_GET['day']]);
+$stmt->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
 $detalles_comanda = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
-$tarjeta = $cnx->prepare("SELECT * FROM ventas WHERE tipo_pago = 'tarjeta' AND DATE(fecha) = :fecha ORDER BY fecha ASC");
-$tarjeta->execute([':fecha' => $_GET['day']]);
+$tarjeta = $cnx->prepare("SELECT * FROM ventas WHERE tipo_pago = 'tarjeta' AND fecha > :fechaInit AND fecha < :fechaFinish ORDER BY fecha ASC");
+$tarjeta->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
 $pagos_tarjeta = $tarjeta->fetchAll(PDO::FETCH_ASSOC);
 
 
 
-$efectivo = $cnx->prepare("SELECT * FROM ventas WHERE tipo_pago = 'efectivo' AND DATE(fecha) = :fecha ORDER BY fecha ASC");
-$efectivo->execute([':fecha' => $_GET['day']]);
+$efectivo = $cnx->prepare("SELECT * FROM ventas WHERE tipo_pago = 'efectivo' AND fecha > :fechaInit AND fecha < :fechaFinish ORDER BY fecha ASC");
+$efectivo->execute([':fechaInit' => $fecha_inicial, ':fechaFinish' => $fecha_final]);
 $pagos_efectivo = $efectivo->fetchAll(PDO::FETCH_ASSOC);
 
 

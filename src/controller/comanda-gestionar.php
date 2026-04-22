@@ -19,6 +19,33 @@ $stmtB = $cnx->prepare("SELECT * FROM comanda_batches WHERE comanda_id = :id ORD
 $stmtB->execute([':id' => $comanda_id]);
 $batches = $stmtB->fetchAll(PDO::FETCH_ASSOC);
 
+// Descuentos
+function list_descuentos($cnx, $comanda_id)
+{
+  $list_descuentos = $cnx->prepare("SELECT * FROM descuentos WHERE id_comanda = :id ORDER BY id ASC");
+  $list_descuentos->execute([':id' => $comanda_id]);
+
+  return $list_descuentos->fetchAll(PDO::FETCH_ASSOC);
+}
+function suma($cnx, $comanda_id)
+{
+  $sum_descuentos = $cnx->prepare("SELECT SUM(descuento) as descuento FROM descuentos WHERE id_comanda = :id");
+  $sum_descuentos->execute([':id' => $comanda_id]);
+
+  return $sum_descuentos->fetch(PDO::FETCH_ASSOC);
+}
+
+$descuentos = list_descuentos($cnx, $comanda_id);
+
+if (!$descuentos) {
+  $hay_descuentos = false;
+  $cantidad_descuento = 0;
+} else {
+  $hay_descuentos = true;
+  $data_descuento = suma($cnx, $comanda_id);
+  $cantidad_descuento = floatval($data_descuento['descuento']);
+}
+
 if ($c['estado'] == 'pendiente') {
   $bg = 'bg-warning text-dark';
   $accion = '
@@ -175,7 +202,7 @@ foreach ($batches as $b) {
       $eliminar = '';
     } else if ($c['estado'] == 'pendiente') {
       $completado = $it['destino'] === 'Barra' ? $it['ready_barra'] : ($it['destino'] === 'Ambos' ? $it['ready_cocina'] + $it['ready_barra'] : $it['ready_cocina']);
-      $eliminar = $completado > 0 ? 'Completado <i class="bi bi-check2 text-success"></i>' : '<div class="p-1 pt-0 pb-0 rounded shadow bg-danger text-light" style="font-size: 0.9rem; padding: 3px 5px; margin-top: 5px; cursor: pointer;" onclick="eliminar_item(\'' . $it['destino'] . '\',' . $c['id'] . ', ' . $it['id'] . ')">Eliminar</div>';
+      $eliminar = $completado > 0 ? '<div class="rounded shadow bg-success text-light" style="font-size: 1rem; padding: 5px 5px; margin-top: 5px; cursor: pointer;" onclick="eliminar_item(\'' . $it['destino'] . '\',' . $c['id'] . ', ' . $it['id'] . ')"><i class="bi bi-trash3-fill"></i></div>' : '<div class="rounded shadow bg-danger text-light" style="font-size: 1rem; padding: 5px 5px; margin-top: 5px; cursor: pointer;" onclick="eliminar_item(\'' . $it['destino'] . '\',' . $c['id'] . ', ' . $it['id'] . ')"><i class="bi bi-trash3-fill"></i></div>';
     }
 
     echo "<div class='p-2 mb-2' style='background:#fff; border:1px solid rgb(0, 0, 0, 0.3); border-radius:10px;'>
@@ -199,18 +226,76 @@ foreach ($batches as $b) {
 echo "<div class='p-2 mt-2' style='background:#fff; border:1px solid #eee; border-radius:10px; background: rgb(0, 0, 0);'>
   <div class='d-flex justify-content-between align-items-center'>
     <div class='fw-bold text-light'>Total comanda</div>
-    <div class='fw-bold text-warning'>$" . number_format($totalComanda, 2) . "</div>
+    <div>".($hay_descuentos == true ? "<span class='text-light text-decoration-line-through opacity-75'>$" . number_format(($totalComanda), 2) . "</span> " : '')."<span class='fw-bold text-warning'>$" . number_format(($totalComanda - $cantidad_descuento), 2) . "</span></div>
   </div>
 </div>";
 
 echo "</div>
   <div class='col-12 col-md-5 col-xl-4 pt-2'>
+    <div class='d-flex align-items-center justify-content-between border-danger bg-danger text-light' style='padding: 10px;'>
+      <span>Descuentos</span>
+      ".($c['estado'] == "pendiente" ? "<button type='button' class='btn btn-light' style='padding: 3px 10px;' onclick='abrir_agregar_descuento()'>Agregar</button>" : "")."
+    </div>
+    <div class='border p-2 pe-3 ps-3 pb-0 mb-3'>";
+
+  if ($hay_descuentos == false) {
+    echo '<div class="mb-2 text-center"><span class="text-muted">No hay descuentos aplicados</span></div>';
+  } else {
+    foreach ($descuentos as $descuento) {
+      echo '<div class="border border-dark border-opacity-50 p-2 mb-2 rounded d-flex align-items-center justify-content-between">
+      <div>
+        <div><span class="fw-bold text-success">' . ($descuento['tipo_descuento'] == 'porcentaje' ? '$' . number_format($descuento['descuento'], 2) . ' <span class="text-muted fw-light">(' . $descuento['valor_descuento'] . '%)</span>' : '$' . number_format($descuento['descuento'], 2)) . '</span></div>
+        <div align="justify">
+          <span class="text-muted">' . $descuento['motivo'] . '</span>
+        </div>
+      </div>
+      <div>
+      '.($c['estado'] == 'pendiente' ? '<button type="button" class="btn btn-danger" onclick="delete_offer(' . $descuento['id'] . ')"><i class="bi bi-trash3-fill"></i></button>' : '').'
+      </div>
+    </div>';
+    }
+  }
+
+  echo "</div>
     <div class='border text-center' style='padding: 10px; background: #ededed;'>Observaciones</div>
     <div class='border p-2 pe-3 ps-3'>" . $accion . "</div>
   </div>
 </div></div>";
 ?>
 
+
+<div class="fade_modal_system fixed-top" id="modal_add_offer">
+  <div class="container_form_modal">
+    <div class="head_form_modal">
+      <span>Agregar Descuento</span>
+      <i class="bi bi-x-lg icon_close_modal" onclick="cerrar_agregar_descuento()"></i>
+    </div>
+    <form action="" method="post" class="body_form_modal" id="form_add_offer">
+
+      <input type="hidden" name="id_comanda" value="<?= $comanda_id ?>">
+      <input type="hidden" name="total_pagar" value="<?= number_format($totalComanda - $cantidad_descuento, 2) ?>">
+
+      <div class="d-grid p-2 ps-4 pe-4">
+        <label for="tipo_descuento">Tipo de Descuento</label>
+        <select name="tipo_descuento" id="tipo_descuento">
+          <option value="porcentaje">Porcentaje</option>
+          <option value="monto">Monto Establecido</option>
+        </select>
+      </div>
+      <div class="d-grid p-2 ps-4 pe-4">
+        <label for="valor_descuento">Porcentaje / Monto</label>
+        <input type="number" name="valor_descuento" id="valor_descuento" required>
+      </div>
+      <div class="d-grid p-2 ps-4 pe-4">
+        <label for="motivo">Motivo del descuento</label>
+        <textarea placeholder="Cupon, cumpleaños, etc." name="motivo" id="motivo"></textarea>
+      </div>
+      <div class="p-2 ps-4 pe-4 pb-4 d-grid">
+        <button type="submit" class="btn_execute_modal">Agregar Descuento</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <script>
   $('#form-cancelacion').submit(function (event) {
@@ -238,4 +323,148 @@ echo "</div>
       }
     });
   });
+
+  function abrir_agregar_descuento() {
+    document.getElementById('modal_add_offer')?.classList.add('visible');
+  }
+
+  function cerrar_agregar_descuento() {
+    document.getElementById('modal_add_offer')?.classList.remove('visible');
+  }
+
+  $('#form_add_offer').submit(function (event) {
+    event.preventDefault();
+
+    // Usar SweetAlert2 para confirmación
+    Swal.fire({
+      title: 'Cofirmar Descuento',
+      html: `
+            <div style="text-align: left;">
+                <div style="font-size: 14px; color: #666;" align="center">¿Deseas aplicar el descuento al total de la comanda?</div>
+            </div>
+        `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Continuar',
+      cancelButtonText: 'Cancelar',
+      scrollbarPadding: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Mostrar loading
+        Swal.fire({
+          title: 'Procesando...',
+          text: 'Enviando información',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        var formData = new FormData(this);
+
+        $.ajax({
+          type: 'POST',
+          url: '../../controller/comanda-gestionar-descuento.php',
+          data: formData,
+          processData: false,
+          contentType: false,
+          dataType: 'json',
+          success: function (response) {
+            if (response.status === 'EXITO') {
+              Swal.close();
+              document.getElementById('form_add_offer').reset();
+              cerrar_agregar_descuento();
+              auxiliaRecargar(response.comanda);
+
+              Swal.fire({
+                title: 'Exito',
+                text: 'Se aplico el descuento a la comanda',
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: response.message,
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+              });
+            }
+          },
+          error: function () {
+            Swal.fire({
+              title: 'Error',
+              text: 'Ocurrió un error al procesar la solicitud',
+              icon: 'error',
+              confirmButtonText: 'Aceptar'
+            });
+          }
+        });
+      }
+    });
+  });
+
+  function delete_offer(id) {
+    // Usar SweetAlert2 para confirmación
+    Swal.fire({
+      title: 'Eliminar Descuento',
+      html: `
+            <div style="text-align: left;">
+                <div style="font-size: 14px; color: #666;" align="center">¿Deseas eliminar el descuento?</div>
+            </div>
+        `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Continuar',
+      cancelButtonText: 'Cancelar',
+      scrollbarPadding: false
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Mostrar loading
+        Swal.fire({
+          title: 'Procesando...',
+          text: 'Enviando información',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        $.ajax({
+          type: 'POST',
+          url: '../../controller/comanda-eliminar-descuento.php',
+          data: { id: id },
+          dataType: 'json',
+          success: function (response) {
+            if (response.status === 'EXITO') {
+              Swal.close();
+              auxiliaRecargar(response.comanda);
+
+              Swal.fire({
+                title: 'Exito',
+                text: 'Descuento Eliminado',
+                icon: 'success',
+                confirmButtonText: 'Aceptar'
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: response.message,
+                icon: 'error',
+                confirmButtonText: 'Aceptar'
+              });
+            }
+          },
+          error: function () {
+            Swal.fire({
+              title: 'Error',
+              text: 'Ocurrió un error al procesar la solicitud',
+              icon: 'error',
+              confirmButtonText: 'Aceptar'
+            });
+          }
+        });
+      }
+    });
+  }
 </script>

@@ -7,13 +7,15 @@ $response = array();
 $fecha = date('Y-m-d H:i:s');
 $cantidad = floatval($_POST['monto_gasto']);
 $concepto = $_POST['concepto_gasto'];
+$tipo = $_POST['tipo_movimiento'];
 
 $conexion = new Conexion();
-$init = $conexion->prepare('INSERT INTO gastos_extras(cantidad, fecha, concepto, usuario) VALUES (:cantidad, :fecha, :concepto, :usuario)');
+$init = $conexion->prepare('INSERT INTO gastos_extras(cantidad, fecha, concepto, usuario, tipo) VALUES (:cantidad, :fecha, :concepto, :usuario, :tipo)');
 $init->bindParam(':cantidad', $cantidad);
 $init->bindParam(':fecha', $fecha);
 $init->bindParam(':concepto', $concepto);
 $init->bindParam(':usuario', $_SESSION['data-useractive']);
+$init->bindParam(':tipo', $tipo);
 $init->execute();
 
 

@@ -4,7 +4,12 @@ date_default_timezone_set('America/Mexico_City');
 include('../model/conexion.php');
 $rol = $_POST['rol'];
 
-$fecha = date('Y-m-d');
+if ($hora < 6) {
+    $fecha = date('Y-m-d', strtotime($dia . ' -1 day'));
+} else {
+    $fecha = date('Y-m-d');
+}
+
 $fecha_inicial = date('Y-m-d 06:00:00', strtotime($fecha));
 $fecha_final = date('Y-m-d 06:00:00', strtotime($fecha . ' +1 day'));
 

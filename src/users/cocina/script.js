@@ -99,7 +99,6 @@ function reproducirBeep() {
 }
 
 // Función para crear overlay de notificación (YA NO SE USA para nueva/editada)
-// La dejo por si después la ocupas, pero no se invoca.
 function crearOverlayNotificacion(tipo, comandaId) {
     const overlay = document.createElement('div');
     overlay.className = 'ticket-overlay';
@@ -171,27 +170,7 @@ function cargarTickets() {
                 return;
             }
 
-            // Filtrar comandas que tengan más de 40 segundos
-            const ahora = new Date().getTime() / 100;
-            const tiempoMinimo = 216400; // 40 segundos en milisegundos
-
-
-            const comandasFiltradas = todasLasComandas.filter(comanda => {
-                // Usar el campo 'fecha' que es el que tiene la fecha
-                if (!comanda.fecha) {
-                    console.warn('Comanda sin fecha:', comanda);
-                    return false; // No mostrar comandas sin fecha
-                }
-
-                // Convertir el string de fecha a objeto Date
-                // Formato esperado: "2026-03-03 20:42:31"
-                const fechaComanda = new Date(comanda.fecha.replace(' ', 'T') + 'Z');
-                const tiempoComanda = fechaComanda.getTime() / 100;
-                const diferencia = ahora - tiempoComanda;
-
-                // Incluir comandas que tengan más de 40 segundos
-                return diferencia > tiempoMinimo;
-            });
+            const comandasFiltradas = todasLasComandas.filter(comanda => !!comanda.fecha);
 
             // Verificar si hay comandas nuevas (solo para sonido)
             const hayComandasNuevas = comandasFiltradas.some(nuevaComanda =>
@@ -333,41 +312,30 @@ function actualizarCardsCambiadas(nuevasComandas) {
 function agregarComandasNuevas(comandasNuevas) {
     const container = document.getElementById('tickets-container');
 
-    // Filtro adicional de seguridad
-    const ahora = new Date().getTime() / 100;
-    const tiempoMinimo = 216400;
-
     comandasNuevas.forEach(comanda => {
         if (!comanda.fecha) return; // Cambiado de created_at a fecha
 
-        const fechaComanda = new Date(comanda.fecha.replace(' ', 'T') + 'Z');
-        const tiempoComanda = fechaComanda.getTime() / 100;
-        const diferencia = ahora - tiempoComanda;
+        const cardHtml = crearCardComanda(comanda);
 
-        // Solo agregar si tiene más de 40 segundos
-        if (diferencia > tiempoMinimo) {
-            const cardHtml = crearCardComanda(comanda);
+        const temp = document.createElement('div');
+        temp.innerHTML = cardHtml;
+        const nuevaCard = temp.firstElementChild;
 
-            const temp = document.createElement('div');
-            temp.innerHTML = cardHtml;
-            const nuevaCard = temp.firstElementChild;
+        // Animación de entrada
+        nuevaCard.style.opacity = '0';
+        nuevaCard.style.transform = 'translateY(20px)';
+        nuevaCard.style.transition = 'all 0.3s ease';
 
-            // Animación de entrada
-            nuevaCard.style.opacity = '0';
-            nuevaCard.style.transform = 'translateY(20px)';
-            nuevaCard.style.transition = 'all 0.3s ease';
+        container.appendChild(nuevaCard);
 
-            container.appendChild(nuevaCard);
+        nuevaCard.offsetHeight;
 
-            nuevaCard.offsetHeight;
+        setTimeout(() => {
+            nuevaCard.style.opacity = '1';
+            nuevaCard.style.transform = 'translateY(0)';
+        }, 10);
 
-            setTimeout(() => {
-                nuevaCard.style.opacity = '1';
-                nuevaCard.style.transform = 'translateY(0)';
-            }, 10);
-
-            agregarScrollListenerATicket(nuevaCard);
-        }
+        agregarScrollListenerATicket(nuevaCard);
     });
 }
 
@@ -548,7 +516,7 @@ function crearCardComanda(comanda, highlightKeys = new Set()) {
                             <h5 class="mb-1">Comanda #${comanda.id}</h5>
                         </div>
                         <div class="d-flex align-items-center gap-2">
-                            ${(comanda.cliente_info == 'Para Llevar' ? '<div class="small rounded bg-warning" style="padding: 2px 5px; color: #000000;">Para Llevar</span>' : '<div class="small opacity-75">'+comanda.cliente_info+'</span>') || '<div class="small opacity-75">Cliente General</span>'}</div>
+                            ${(comanda.cliente_info == 'Para Llevar' ? '<div class="small rounded bg-warning" style="padding: 2px 5px; color: #000000;">Para Llevar</span>' : '<div class="small opacity-75">' + comanda.cliente_info + '</span>') || '<div class="small opacity-75">Cliente General</span>'}</div>
                         </div>
                     </div>
                     <div class="d-flex justify-content-between small mt-2">
@@ -643,7 +611,7 @@ function crearCardComanda(comanda, highlightKeys = new Set()) {
     html += `
                 </div>
                 <div style="height: 36px; padding: 0px 10px;"> `;
-    
+
     if (comanda.estado !== 'finalizado' && comanda.estado !== 'completado') {
         html += `
                             <button class="btn btn-sm btn-success btn-completar" 
@@ -967,20 +935,7 @@ function renderizarTickets(todasLasComandas) {
     const container = document.getElementById('tickets-container');
     if (!container) return;
 
-    // Filtrar comandas que tengan más de 40 segundos
-    const ahora = new Date().getTime() / 100;
-    const tiempoMinimo = 216400; // 40 segundos en milisegundos
-
-    const comandas = todasLasComandas.filter(comanda => {
-        if (!comanda.fecha) return false; // Cambiado de created_at a fecha
-
-        // Convertir el string de fecha correctamente
-        const fechaComanda = new Date(comanda.fecha.replace(' ', 'T') + 'Z');
-        const tiempoComanda = fechaComanda.getTime() / 100;
-        const diferencia = ahora - tiempoComanda;
-
-        return diferencia > tiempoMinimo;
-    });
+    const comandas = todasLasComandas.filter(comanda => !!comanda.fecha);
 
     if (!comandas || comandas.length === 0) {
         container.innerHTML = `
@@ -1175,7 +1130,7 @@ document.addEventListener('click', e => {
         $.ajax({
             type: "POST",
             url: "../../controller/cocina-history-comandas.php",
-            data: {rol: 'cocina'},
+            data: { rol: 'cocina' },
             success: function (response) {
                 $('#body_modal_history').html(response);
             }

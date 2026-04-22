@@ -34,8 +34,8 @@ if (isset($_POST['logout'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
     <title>Caja - Inicio</title>
-    <link href="../../../style.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet">
+    <link href="../../../style.css?v=2" rel="stylesheet">
+    <link href="style.css?v=2" rel="stylesheet">
 
     <style>
         #body-page {
@@ -76,12 +76,12 @@ if (isset($_POST['logout'])) {
     <div class="container_main_home" id="container_main_home">
         <div class="d-flex align-items-center justify-content-between">
             <button type="button" class="btn-add" id="open_modal_cortecaja">Corte de Caja</button>
-            <button type="button" class="btn-add" id="open_modal_gastos">Agregar Gasto</button>
+            <button type="button" class="btn-add" id="open_modal_gastos">Ingresos / Gastos</button>
         </div>
 
         <div>
             <div class="mt-2 mb-2">
-                <strong>Gastos Extras</strong>
+                <strong>Ingresos & Gastos Extras</strong>
             </div>
 
             <div class="table-responsive" id="tabla-gastos-extras">
@@ -105,7 +105,7 @@ if (isset($_POST['logout'])) {
                         configurado
                         el
                         monto inicial de caja. Solicita al administrador que ingrese el monto inicial desde el panel de
-                        administracion en la opcion "Mesas & Caja".
+                        administracion en la seccion "Caja > Cambiar Monto Inicial".
                     </div>
                     <?php
                 } else {
@@ -176,7 +176,7 @@ if (isset($_POST['logout'])) {
     <div class="fade_modal_system fixed-top" id="modal_add_gasto">
         <div class="container_form_modal">
             <div class="head_form_modal">
-                <span>Corte de Caja</span>
+                <span>Ingresos / Gastos</span>
                 <i class="bi bi-x-lg icon_close_modal" id="close_modal_gastos"></i>
             </div>
             <form action="" method="post" class="body_form_modal" id="add-gasto">
@@ -188,11 +188,19 @@ if (isset($_POST['logout'])) {
                         configurado
                         el
                         monto inicial de caja. Solicita al administrador que ingrese el monto inicial desde el panel de
-                        administracion en la opcion "Mesas & Caja".
+                        administracion en la seccion "Caja > Cambiar Monto Inicial".
                     </div>
                     <?php
                 } else {
                     ?>
+                    <div class="d-grid pt-3 ps-4 pe-4 pb-1">
+                        <label for="tipo_movimiento">Tipo de Movimiento</label>
+                        <select name="tipo_movimiento" id="tipo_movimiento">
+                            <option value="ingreso">Ingreso</option>
+                            <option value="gasto">Gasto</option>
+                        </select>
+                    </div>
+
                     <div class="d-grid pt-3 ps-4 pe-4 pb-1">
                         <label for="monto_gasto">Cantidad</label>
                         <input type="number" name="monto_gasto" id="monto_gasto" step="0.01" min="0" required>
@@ -234,14 +242,14 @@ if (isset($_POST['logout'])) {
 
 </html>
 
-<script src="../../../script.js"></script>
+<script src="../../../script.js?v=2"></script>
 
 <script>
     function tabla_gastos() {
         $.ajax({
             type: "post",
             url: "../../controller/caja-tabla-gastos.php",
-            data: { },
+            data: {},
             success: function (response) {
                 $("#tabla-gastos-extras").html(response);
             }
@@ -369,10 +377,10 @@ if (isset($_POST['logout'])) {
 
         // Usar SweetAlert2 para confirmación
         Swal.fire({
-            title: 'Confirmar Gasto',
+            title: 'Confirmar Movimiento',
             html: `
             <div style="text-align: left;">
-                <div style="font-size: 14px; color: #666;" align="center">Esta acción restara efectivo a la caja.</div>
+                <div style="font-size: 14px; color: #666;" align="center">Esta acción ajustara efectivo a la caja.</div>
             </div>
         `,
             icon: 'question',
@@ -410,7 +418,7 @@ if (isset($_POST['logout'])) {
                             document.getElementById('modal_add_gasto')?.classList.remove('visible');
                             Swal.fire({
                                 title: 'Exito',
-                                text: 'Se agrego un nuevo gasto a la caja',
+                                text: 'Se agrego un movimiento extra a la caja',
                                 icon: 'success',
                                 confirmButtonText: 'Aceptar'
                             });
@@ -435,4 +443,66 @@ if (isset($_POST['logout'])) {
             }
         });
     });
+
+    function eliminar_movimiento(id) {
+        Swal.fire({
+            title: 'Eliminar Movimiento',
+            html: `
+            <div style="text-align: left;">
+                <div style="font-size: 14px; color: #666;" align="center">Esta acción revertira el ajuste de caja.</div>
+            </div>
+        `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Continuar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostrar loading
+                Swal.fire({
+                    title: 'Procesando...',
+                    text: 'Enviando información',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                $.ajax({
+                    type: 'POST',
+                    url: '../../controller/caja-delete-movimiento.php',
+                    data: {id: id},
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.status === 'EXITO') {
+                            tabla_gastos();
+                            Swal.close();
+                            Swal.fire({
+                                title: 'Exito',
+                                text: 'Se elimino el movimiento extra de caja',
+                                icon: 'success',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: response.message,
+                                icon: 'error',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Ocurrió un error al procesar la solicitud',
+                            icon: 'error',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    }
+                });
+            }
+        });
+    }
 </script>

@@ -59,4 +59,4 @@
     </div>
 </div>
 
-<script src="editar-menu-script.js"></script>
+<script src="editar-menu-script.js?v=2"></script>

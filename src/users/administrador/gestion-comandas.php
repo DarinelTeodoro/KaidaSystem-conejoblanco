@@ -23,4 +23,4 @@
     </form>
 </div>
 
-<script src="gestion-comandas.js"></script>
+<script src="gestion-comandas.js?v=2"></script>

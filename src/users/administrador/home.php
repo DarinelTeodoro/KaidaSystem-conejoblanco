@@ -42,8 +42,8 @@ if (empty($_SESSION['data-useractive'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
     <title>Administrador - Panel de Administración</title>
-    <link href="../../../style.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet">
+    <link href="../../../style.css?v=2" rel="stylesheet">
+    <link href="style.css?v=2" rel="stylesheet">
 </head>
 
 <body class="body-page" id="body-page">
@@ -86,7 +86,7 @@ if (empty($_SESSION['data-useractive'])) {
 
 </html>
 
-<script src="../../../script.js"></script>
+<script src="../../../script.js?v=2"></script>
 <script>
     $('#container_main_home').load('dashboard.php');
 </script>

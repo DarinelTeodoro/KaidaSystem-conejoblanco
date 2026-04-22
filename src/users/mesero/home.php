@@ -35,8 +35,8 @@ if (isset($_POST['logout'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
     <title>Mesero - Inicio</title>
-    <link href="../../../style.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet">
+    <link href="../../../style.css?v=2" rel="stylesheet">
+    <link href="style.css?v=2" rel="stylesheet">
 
     <style>
         #body-page {
@@ -118,5 +118,5 @@ if (isset($_POST['logout'])) {
 
 </html>
 
-<script src="../../../script.js"></script>
-<script src="script.js"></script>
+<script src="../../../script.js?v=2"></script>
+<script src="script.js?v=2"></script>

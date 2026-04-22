@@ -2,6 +2,24 @@
 session_start();
 include('../model/querys.php');
 
+function list_descuentos($comanda_id)
+{
+    $cnx = new Conexion();
+    $list_descuentos = $cnx->prepare("SELECT * FROM descuentos WHERE id_comanda = :id ORDER BY id ASC");
+    $list_descuentos->execute([':id' => $comanda_id]);
+
+    return $list_descuentos->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function suma($comanda_id)
+{
+    $cnx = new Conexion();
+    $sum_descuentos = $cnx->prepare("SELECT SUM(descuento) as descuento FROM descuentos WHERE id_comanda = :id");
+    $sum_descuentos->execute([':id' => $comanda_id]);
+
+    return $sum_descuentos->fetch(PDO::FETCH_ASSOC);
+}
+
 $comanda_id = (int) ($_POST['id'] ?? 0);
 if (!$comanda_id) {
     http_response_code(400);
@@ -18,6 +36,15 @@ $comanda = $stmtComanda->fetch(PDO::FETCH_ASSOC);
 if (!$comanda) {
     http_response_code(404);
     exit('Comanda no encontrada');
+}
+
+$descuentos = list_descuentos($comanda_id);
+
+if (!$descuentos) {
+    $cantidad_descuento = 0;
+} else {
+    $data_descuento = suma($comanda_id);
+    $cantidad_descuento = floatval($data_descuento['descuento']);
 }
 
 $mesero = consultar_usuario($comanda['user_id']);
@@ -40,6 +67,8 @@ $detalle = [
     'total' => 0,
     'mesero' => $name_mesero
 ];
+
+$totalGeneral = 0;
 
 foreach ($batches as $batch) {
     $batchDetalle = [
@@ -78,35 +107,37 @@ foreach ($batches as $batch) {
 
         foreach ($array_extras as $ext) {
             $itemDetalle['extras'][] = [
-                    'nombre' => $ext['nombre'],
-                    'qty' => $ext['qty'],
-                    'precio' => $ext['precio'],
-                    'total' => $ext['precio'] * $ext['qty']
-                ];
-                $itemDetalle['subtotal'] += $ext['precio'] * $ext['qty'];
+                'nombre' => $ext['nombre'],
+                'qty' => $ext['qty'],
+                'precio' => $ext['precio'],
+                'total' => $ext['precio'] * $ext['qty']
+            ];
+            $itemDetalle['subtotal'] += $ext['precio'] * $ext['qty'];
         }
 
         foreach ($componentes as $comp) {
-                if ($item['tipo'] === 'combo') {
-                    $grupo = $comp['grupo_nombre'] ?? 'Otros';
-                    $itemDetalle['componentes'][$grupo][] = [
-                        'nombre' => $comp['nombre'],
-                        'kind' => $comp['kind']
-                    ];
-                } else {
-                    $itemDetalle['componentes'][] = [
-                        'nombre' => $comp['nombre'],
-                        'kind' => $comp['kind']
-                    ];
-                }
+            if ($item['tipo'] === 'combo') {
+                $grupo = $comp['grupo_nombre'] ?? 'Otros';
+                $itemDetalle['componentes'][$grupo][] = [
+                    'nombre' => $comp['nombre'],
+                    'kind' => $comp['kind']
+                ];
+            } else {
+                $itemDetalle['componentes'][] = [
+                    'nombre' => $comp['nombre'],
+                    'kind' => $comp['kind']
+                ];
+            }
         }
 
         $batchDetalle['items'][] = $itemDetalle;
-        $detalle['total'] += $itemDetalle['subtotal'];
+        $totalGeneral += $itemDetalle['subtotal'];
     }
 
     $detalle['batches'][] = $batchDetalle;
 }
+
+$detalle['total'] = $totalGeneral - $cantidad_descuento;
 
 header('Content-Type: application/json');
 echo json_encode($detalle);

@@ -51,7 +51,7 @@ $data_caja = data_servicio();
     </div>
 </div>
 
-<script src="reporte-caja.js"></script>
+<script src="reporte-caja.js?v=2"></script>
 <script>
     $('#form_config_caja').submit(function (event) {
         event.preventDefault();

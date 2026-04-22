@@ -24,4 +24,4 @@
     <div id="container-data-ventas"></div>
 </div>
 
-<script src="estadisticas-operativas.js"></script>
+<script src="estadisticas-operativas.js?v=2"></script>

@@ -5,6 +5,35 @@ $comanda_id = (int) ($_POST['id'] ?? 0);
 if (!$comanda_id)
   exit('Comanda inválida');
 
+function list_descuentos($comanda_id)
+{
+  $cnx = new Conexion();
+  $list_descuentos = $cnx->prepare("SELECT * FROM descuentos WHERE id_comanda = :id ORDER BY id ASC");
+  $list_descuentos->execute([':id' => $comanda_id]);
+
+  return $list_descuentos->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function suma($comanda_id)
+{
+  $cnx = new Conexion();
+  $sum_descuentos = $cnx->prepare("SELECT SUM(descuento) as descuento FROM descuentos WHERE id_comanda = :id");
+  $sum_descuentos->execute([':id' => $comanda_id]);
+
+  return $sum_descuentos->fetch(PDO::FETCH_ASSOC);
+}
+
+$descuentos = list_descuentos($comanda_id);
+
+if (!$descuentos) {
+  $hay_descuentos = false;
+  $cantidad_descuento = 0;
+} else {
+  $hay_descuentos = true;
+  $data_descuento = suma($comanda_id);
+  $cantidad_descuento = floatval($data_descuento['descuento']);
+}
+
 $cnx = new Conexion();
 
 // Comanda
@@ -57,7 +86,7 @@ foreach ($batches as $b) {
   // Separar productos/variantes de los extras
   $productos = array_filter($items, fn($it) => $it['tipo'] === 'product' || $it['tipo'] === 'variante');
   $extrasSueltos = array_filter($items, fn($it) => $it['tipo'] === 'extra' && ($it['item_id'] == 0 || $it['item_id'] === null));
-  
+
   // Crear un mapa de extras por item_id
   $extrasPorProducto = [];
   foreach ($items as $it) {
@@ -80,7 +109,7 @@ foreach ($batches as $b) {
   // Mostrar productos/variantes con sus extras correspondientes
   foreach ($productos as $it) {
     $itemId = (int) $it['id'];
-    
+
     // Obtener los extras que pertenecen a este producto
     $extrasDelProducto = $extrasPorProducto[$itemId] ?? [];
 
@@ -177,8 +206,8 @@ foreach ($batches as $b) {
 
 echo "<div class='p-2 mt-2' style='background:#fff; border:1px solid #eee; border-radius:10px; background: rgb(0, 0, 0);'>
   <div class='d-flex justify-content-between align-items-center'>
-    <div class='fw-bold text-light'>Total comanda</div>
-    <div class='fw-bold text-warning'>$" . number_format($totalComanda, 2) . "</div>
+    <div class='fw-bold text-light'>Total</div>
+    <div>".($hay_descuentos == true ? "<span class='text-light text-decoration-line-through opacity-75'>$" . number_format($totalComanda, 2) . "</span> " : "")."<span class='fw-bold text-warning'>$" . number_format($totalComanda - $cantidad_descuento, 2) . "</span></div>
   </div>
 </div>";
 ?>

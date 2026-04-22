@@ -38,8 +38,8 @@ $data_comanda = detalle_comanda($id_comanda);
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/x-icon" href="../../../favicon.ico">
     <title>Mesero - Editar Comanda</title>
-    <link href="../../../style.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet">
+    <link href="../../../style.css?v=2" rel="stylesheet">
+    <link href="style.css?v=2" rel="stylesheet">
 
     <style>
         #body-page {
@@ -199,7 +199,7 @@ $data_comanda = detalle_comanda($id_comanda);
 </body>
 
 </html>
-<script src="../../../script.js"></script>
+<script src="../../../script.js?v=2"></script>
 
 <script>
     function show_alert_2(status, message) {
